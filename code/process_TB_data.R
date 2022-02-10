@@ -25,6 +25,11 @@ nl <- read.csv("Data/PartnerChoice-Ross-Site3-Networks.csv",
 
 kin <- read.csv("Data/PartnerChoice-Ross-Site3-Kinship.csv")
 
+gl <- read.csv(file = "Data/PartnerChoice-Ross-Site3-Games.csv",
+               na = "",
+               header = TRUE,
+               as.is = TRUE)
+
 #################################################
 # SPECIFY KINSHIP DATA
 #################################################
@@ -125,12 +130,30 @@ unit_dyads$distance <- 6000*(unit_dyads$distance / max(unit_dyads$distance, na.r
 
 names <- unique(nl$Question) # question numbers
 el <- vector("list", length(names))
+gel <- vector("list", length(names))
 
 # network list
 for(i in 1:length(names)){
   el[[i]]<- nl[which(nl$Question == i), ]
 }
 
+# game list
+for(i in 1:6){
+  gel[[i]]<- gl[which(gl$Question == i), ]
+}
+
+elGive <- rbind(gel[[1]])
+
+G <- as.matrix(elGive)
+G[which(G == "   ")] <- NA
+G[which(G == "QYE")] <- NA
+G <- G[complete.cases(G), ]
+labels <- unique( c(G[,1], G[,2]) )
+A <- matrix(0, length(labels), length(labels))
+rownames(A) <- colnames(A) <- labels
+A[ G[, 1:2] ] <- as.numeric(G[, 3])
+A_Give <- A
+ 
 # Loan money
 elExchange <- rbind(el[[3]], el[[4]])
 snExchange <- graph.data.frame(d = elExchange, directed = TRUE)
@@ -193,9 +216,9 @@ indiv$Grip[which(is.na(indiv$Grip))] <- mean(indiv$Grip, na.rm = TRUE)
 indiv$EducationYears[which(is.na(indiv$EducationYears))] <- median(indiv$EducationYears,na.rm=TRUE)
 
 # Create compposite religiousness variable
-RelPub <- ifelse(indiv$ReligionPublic == "AFEWTIMESPERWEEK" | indiv$ReligionPublic=="MORETHANONCEPERWEEK" | indiv$ReligionPublic == "ONCEPERWEEK", 1, 2) 
-RelPri <- ifelse(indiv$ReligionPrivate == "EVERYDAY" | indiv$ReligionPrivate == "MORETHANONCEPERDAY", 1, 2)
-GodIneq <- ifelse(indiv$GodInequality == "YES", 1, 2)
+indiv$RelPub <- ifelse(indiv$ReligionPublic == "AFEWTIMESPERWEEK" | indiv$ReligionPublic=="MORETHANONCEPERWEEK" | indiv$ReligionPublic == "ONCEPERWEEK", 1, 2) 
+indiv$RelPri <- ifelse(indiv$ReligionPrivate == "EVERYDAY" | indiv$ReligionPrivate == "MORETHANONCEPERDAY", 1, 2)
+indiv$GodIneq <- ifelse(indiv$GodInequality == "YES", 1, 2)
 
 # Write out data
 write.csv(A_Friends, "/Users/danielredhead/friendship-Colombia/data/TB_friends.csv")
