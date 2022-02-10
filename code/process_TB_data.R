@@ -198,9 +198,9 @@ RelPri <- ifelse(indiv$ReligionPrivate == "EVERYDAY" | indiv$ReligionPrivate == 
 GodIneq <- ifelse(indiv$GodInequality == "YES", 1, 2)
 
 # Write out data
-write.csv(A_Friends, "/Users/danielredhead/friendship-Colombia/data/friends.csv")
-write.csv(A_Work, "/Users/danielredhead/friendship-Colombia/data/working.csv")
-write.csv(A_Exchange, "/Users/danielredhead/friendship-Colombia/data/exchange.csv")
-write.csv(A_Kin, "/Users/danielredhead/friendship-Colombia/data/kinship.csv")
-write.csv(indiv, "/Users/danielredhead/friendship-Colombia/data/individuals.csv")
+write.csv(A_Friends, "/Users/danielredhead/friendship-Colombia/data/TB_friends.csv")
+write.csv(A_Work, "/Users/danielredhead/friendship-Colombia/data/TB_working.csv")
+write.csv(A_Exchange, "/Users/danielredhead/friendship-Colombia/data/TB_exchange.csv")
+write.csv(A_Kin, "/Users/danielredhead/friendship-Colombia/data/TB_kinship.csv")
+write.csv(indiv, "/Users/danielredhead/friendship-Colombia/data/TB_individuals.csv")
 
