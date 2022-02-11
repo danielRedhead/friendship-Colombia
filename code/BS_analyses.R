@@ -26,12 +26,12 @@ library(STRAND)
 library(reshape2)
 
 #distance <- as.matrix(read.table("./analyses/preliminary-analyses/su_distance.csv", sep = ","))
-friends <- as.matrix(read.table("./data/TB_friends.csv", sep = ",", row.names = 1, header = TRUE))
-relatedness <- as.matrix(read.table("./data/TB_kinship.csv", sep = ",", row.names = 1, header = TRUE))
-sharing <- as.matrix(read.table("./data/TB_exchange.csv", sep = ",", row.names = 1, header = TRUE))
-work <- as.matrix(read.table("./data/TB_working.csv", sep = ",", row.names = 1, header = TRUE))
+friends <- as.matrix(read.table("./data/BS_friends.csv", sep = ",", row.names = 1, header = TRUE))
+relatedness <- as.matrix(read.table("./data/BS_kinship.csv", sep = ",", row.names = 1, header = TRUE))
+sharing <- as.matrix(read.table("./data/BS_exchange.csv", sep = ",", row.names = 1, header = TRUE))
+work <- as.matrix(read.table("./data/BS_working.csv", sep = ",", row.names = 1, header = TRUE))
 
-att <- read.csv("./data/TB_individuals.csv", sep = ",")
+att <- read.csv("./data/BS_individuals.csv", sep = ",")
 att <- att[att$PID %in% rownames(friends),]
 att$Sex[att$Sex == "F"] <- 1
 att$Sex[att$Sex == "M"] <- 0 

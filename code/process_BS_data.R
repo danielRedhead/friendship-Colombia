@@ -1,6 +1,6 @@
 # Set working directory
-setwd("~/Desktop/Colombian data")
-
+# setwd("~/Desktop/Colombian data")
+setwd("/Users/danielredhead/Dropbox/Augusto")
 # Load packages
 library(kinship2)
 library(reshape2)
@@ -225,10 +225,23 @@ indiv <- indiv %>% filter(PID %in% rownames(A_Friends))
 
 # Filter matrix elements by the IDs present in the individual dataframe
 A_Friends <- A_Friends[which(rownames(A_Friends) %in% indiv$PID), which(rownames(A_Friends) %in% indiv$PID)]
+A_Exchange <- A_Exchange[which(rownames(A_Exchange) %in% indiv$PID), which(rownames(A_Exchange) %in% indiv$PID)]
+A_Work <- A_Work[which(rownames(A_Work) %in% indiv$PID), which(rownames(A_Work) %in% indiv$PID)]
+A_Kin <- A_Kin[which(rownames(A_Kin) %in% indiv$PID), which(rownames(A_Kin) %in% indiv$PID)]
+
+# A_Exchange <- A_Exchange[match(rownames(A_Friends), rownames(A_Exchange)), match(colnames(A_Friends), colnames(A_Exchange))]
+
+indiv <- indiv[match(rownames(A_Friends), indiv$PID),]
+
+all(rownames(A_Exchange) == rownames(A_Friends))
+all(rownames(A_Work) == rownames(A_Friends))
+all(rownames(A_Kin) == rownames(A_Friends))
+all(indiv$PID == rownames(A_Friends))
+
 
 # Write out data
-write.csv(A_Friends, "/Users/danielredhead/friendship-Colombia/data/SU_friends.csv")
-write.csv(A_Work, "/Users/danielredhead/friendship-Colombia/data/SU_working.csv")
-write.csv(A_Exchange, "/Users/danielredhead/friendship-Colombia/data/SU_exchange.csv")
-write.csv(A_Kin, "/Users/danielredhead/friendship-Colombia/data/SU_kinship.csv")
-write.csv(indiv, "/Users/danielredhead/friendship-Colombia/data/SU_individuals.csv")
+write.csv(A_Friends, "/Users/danielredhead/friendship-Colombia/data/BS_friends.csv")
+write.csv(A_Work, "/Users/danielredhead/friendship-Colombia/data/BS_working.csv")
+write.csv(A_Exchange, "/Users/danielredhead/friendship-Colombia/data/BS_exchange.csv")
+write.csv(A_Kin, "/Users/danielredhead/friendship-Colombia/data/BS_kinship.csv")
+write.csv(indiv, "/Users/danielredhead/friendship-Colombia/data/BS_individuals.csv")

@@ -26,16 +26,16 @@ library(STRAND)
 library(reshape2)
 
 #distance <- as.matrix(read.table("./analyses/preliminary-analyses/su_distance.csv", sep = ","))
-friends <- as.matrix(read.table("./data/TB_friends.csv", sep = ",", row.names = 1, header = TRUE))
-relatedness <- as.matrix(read.table("./data/TB_kinship.csv", sep = ",", row.names = 1, header = TRUE))
-sharing <- as.matrix(read.table("./data/TB_exchange.csv", sep = ",", row.names = 1, header = TRUE))
-work <- as.matrix(read.table("./data/TB_working.csv", sep = ",", row.names = 1, header = TRUE))
+friends <- as.matrix(read.table("./data/SU_friends.csv", sep = ",", row.names = 1, header = TRUE))
+relatedness <- as.matrix(read.table("./data/SU_kinship.csv", sep = ",", row.names = 1, header = TRUE))
+sharing <- as.matrix(read.table("./data/SU_exchange.csv", sep = ",", row.names = 1, header = TRUE))
+work <- as.matrix(read.table("./data/SU_working.csv", sep = ",", row.names = 1, header = TRUE))
 
-att <- read.csv("./data/TB_individuals.csv", sep = ",")
+att <- read.csv("./data/SU_individuals.csv", sep = ",")
 att <- att[att$PID %in% rownames(friends),]
 att$Sex[att$Sex == "F"] <- 1
 att$Sex[att$Sex == "M"] <- 0 
-
+att$Sex <- as.numeric(att$Sex)
 # Creat binary matrix of whether individuals are the same religion
 matrix <- data.frame('i' = att$PID, 'rel_i' = att$Religion)
 matrix1 <- data.frame('j' = att$PID, 'rel_j' = att$Religion)
@@ -56,16 +56,16 @@ dyad <- list( Relatedness = relatedness, Sharing = sharing, Same_Religion = same
 
 group_ids <- as.factor(att$Ethnicity)
 
-indiv <-  data.frame( Age = center(att$Age), Female = att$Sex, Grip = center(att$Grip), 
+indiv <-  data.frame( Age = center(att$Age), Female = att$Sex, 
 					Religion = as.factor(att$Religion), Wealth = center(att$hh_wealth))
 
 model_dat <- make_strand_data( self_report = nets,
 group_ids = group_ids, individual_covariates = indiv, dyadic_covariates = dyad
 )
 
-fit <- fit_block_plus_social_relations_model( data=model_dat,
-      focal_regression = ~ Age + Female + Grip + Religion + Wealth,
-      target_regression = ~ Age + Female + Grip + Religion + Wealth,
+fit <- fit_social_relations_model( data=model_dat,
+      focal_regression = ~ Age + Female + Religion + Wealth,
+      target_regression = ~ Age + Female + Religion + Wealth,
       dyad_regression = ~ Relatedness + Sharing + Same_Religion,
        mode="mcmc",
        stan_mcmc_parameters = list(chains = 1, parallel_chains = 1, refresh = 1,
