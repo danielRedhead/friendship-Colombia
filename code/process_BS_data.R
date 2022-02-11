@@ -209,6 +209,9 @@ indiv$Grip[which(is.na(indiv$Grip))] <- mean(indiv$Grip, na.rm = TRUE)
 
 indiv$EducationYears[which(is.na(indiv$EducationYears))] <- median(indiv$EducationYears,na.rm=TRUE)
 
+indiv$Age[which(is.na(indiv$Age))] <- median(indiv$Age, na.rm=TRUE) #some other missing data
+indiv$BMI[which(is.na(indiv$BMI))] <- median(indiv$BMI, na.rm=TRUE) 
+
 # Create compposite religiousness variable
 indiv$RelPub <- ifelse(indiv$ReligionPublic == "AFEWTIMESPERWEEK" | indiv$ReligionPublic=="MORETHANONCEPERWEEK" | indiv$ReligionPublic == "ONCEPERWEEK", 1, 2) 
 indiv$RelPri <- ifelse(indiv$ReligionPrivate == "EVERYDAY" | indiv$ReligionPrivate == "MORETHANONCEPERDAY", 1, 2)
