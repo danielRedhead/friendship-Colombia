@@ -216,7 +216,7 @@ indiv$BMI[which(is.na(indiv$BMI))] <- mean(indiv$BMI, na.rm = TRUE)
 indiv$hh_wealth[which(is.na(indiv$hh_wealth))] <- mean(indiv$hh_wealth, na.rm = TRUE)
 
 # Impute missing values of categorical variables with "unknown"
-indiv <- indiv %>% mutate_at(vars(3:4, 8:11), ~replace(., is.na(.), "UNKNOWN"))
+indiv <- indiv %>% mutate_at(vars(HHID, 3:4, 8:11), ~replace(., is.na(.), "UNKNOWN"))
 
 # Create compposite religiousness variable
 indiv$RelPub <- ifelse(indiv$ReligionPublic == "AFEWTIMESPERWEEK" | indiv$ReligionPublic=="MORETHANONCEPERWEEK" | indiv$ReligionPublic == "ONCEPERWEEK", 1, 2) 
