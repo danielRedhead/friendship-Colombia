@@ -218,7 +218,7 @@ indiv$GodIneq <- ifelse(indiv$GodInequality == "YES", 1, 2)
 
 # Write out data
 write.csv(A_Friends, "~/Desktop/friendship_project/SC_friends.csv")
-write.csv(A_Friends, "~/Desktop/friendship_project/SC_working.csv")
-write.csv(A_Friends, "~/Desktop/friendship_project/SC_exchange.csv")
-write.csv(A_Friends, "~/Desktop/friendship_project/SC_kinship.csv")
-write.csv(A_Friends, "~/Desktop/friendship_project/SC_individuals.csv")
+write.csv(A_Work, "~/Desktop/friendship_project/SC_working.csv")
+write.csv(A_Exchange, "~/Desktop/friendship_project/SC_exchange.csv")
+write.csv(A_Kinship, "~/Desktop/friendship_project/SC_kinship.csv")
+write.csv(indiv, "~/Desktop/friendship_project/SC_individuals.csv")
