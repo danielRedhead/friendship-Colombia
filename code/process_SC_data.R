@@ -208,8 +208,9 @@ indiv$hh_wealth <- su$TotalValue[match(indiv$HHID, su$HHID)]
 # CHECK TO SEE WHETHER THERE ARE ANY OTHER MISSING DATA
 # Impute missing values for each variable
 indiv$Grip[which(is.na(indiv$Grip))] <- mean(indiv$Grip, na.rm = TRUE)
-
 indiv$EducationYears[which(is.na(indiv$EducationYears))] <- median(indiv$EducationYears,na.rm=TRUE)
+indiv$Age[which(is.na(indiv$Age))] <- mean(indiv$Age, na.rm = TRUE)
+indiv$BMI[which(is.na(indiv$BMI))] <- mean(indiv$BMI, na.rm = TRUE)
 
 # Create compposite religiousness variable
 indiv$RelPub <- ifelse(indiv$ReligionPublic == "AFEWTIMESPERWEEK" | indiv$ReligionPublic=="MORETHANONCEPERWEEK" | indiv$ReligionPublic == "ONCEPERWEEK", 1, 2) 
