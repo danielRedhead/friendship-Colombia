@@ -227,6 +227,12 @@ indiv$RelPub <- ifelse(indiv$ReligionPublic == "AFEWTIMESPERWEEK" | indiv$Religi
 indiv$RelPri <- ifelse(indiv$ReligionPrivate == "EVERYDAY" | indiv$ReligionPrivate == "MORETHANONCEPERDAY", 1, 2)
 indiv$GodIneq <- ifelse(indiv$GodInequality == "YES", 1, 2)
 
+# Filter individual dataframe by the IDs present in the friendship matrix
+indiv <- indiv %>% filter(PID %in% rownames(A_Friends))
+
+# Filter matrix elements by the IDs present in the individual dataframe
+A_Friends <- A_Friends[which(rownames(A_Friends) %in% indiv$PID), which(rownames(A_Friends) %in% indiv$PID)]
+
 # Write out data
 write.csv(A_Friends, "/Users/danielredhead/friendship-Colombia/data/TB_friends.csv")
 write.csv(A_Work, "/Users/danielredhead/friendship-Colombia/data/TB_working.csv")
