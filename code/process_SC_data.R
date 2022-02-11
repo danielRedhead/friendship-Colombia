@@ -205,13 +205,18 @@ indiv <- select(indiv, PID, HHID, Sex, Ethnicity, Age,
 # Add total household wealth to the indiv table
 indiv$hh_wealth <- su$TotalValue[match(indiv$HHID, su$HHID)]
 
-# CHECK TO SEE WHETHER THERE ARE ANY OTHER MISSING DATA
+# Check for missing values
+apply(indiv, 2, anyNA)
+
 # Impute missing values for each variable
 indiv$Grip[which(is.na(indiv$Grip))] <- mean(indiv$Grip, na.rm = TRUE)
 indiv$EducationYears[which(is.na(indiv$EducationYears))] <- median(indiv$EducationYears,na.rm=TRUE)
 indiv$Age[which(is.na(indiv$Age))] <- mean(indiv$Age, na.rm = TRUE)
 indiv$BMI[which(is.na(indiv$BMI))] <- mean(indiv$BMI, na.rm = TRUE)
 indiv$hh_wealth[which(is.na(indiv$hh_wealth))] <- mean(indiv$hh_wealth, na.rm = TRUE)
+
+# Impute missing values of categorical variables with "unknown"
+indiv <- indiv %>% mutate_at(vars(3:4, 8:11), ~replace(., is.na(.), "UNKNOWN"))
 
 # Create compposite religiousness variable
 indiv$RelPub <- ifelse(indiv$ReligionPublic == "AFEWTIMESPERWEEK" | indiv$ReligionPublic=="MORETHANONCEPERWEEK" | indiv$ReligionPublic == "ONCEPERWEEK", 1, 2) 
