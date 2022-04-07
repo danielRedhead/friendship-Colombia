@@ -121,7 +121,7 @@ unit_dyads <- merge(ul1[, c("su_dyad", "distance")],
 
 unit_dyads$distance <- 6000*(unit_dyads$distance / max(unit_dyads$distance, na.rm = TRUE))
 
-# NEED TO SPECIFY INDIV X INDIV DISTANCE MATRIX
+
 
 #################################################
 names <- unique(nl$Question) # question numbers
@@ -147,6 +147,14 @@ A <- matrix(0, length(labels), length(labels))
 rownames(A) <- colnames(A) <- labels
 A[G[, 1:2]] <- as.numeric(G[, 3])
 A_Give <- A
+
+G <- as.matrix(gel[[4]])
+G <- G[complete.cases(G), ]
+labels <- unique(c(G[, 1], G[, 2]))
+A <- matrix(0, length(labels), length(labels))
+rownames(A) <- colnames(A) <- labels
+A[G[, 1:2]] <- G[, 3]
+A_Atrakt <- ifelse(A==0, 0,1)
 
 # Loan money
 elExchange <- rbind(el[[3]], el[[4]])
@@ -198,7 +206,7 @@ A_Kin <- A
 indiv <- select(indiv, PID, HHID, Sex, Ethnicity, Age, 
                 BMI, Grip, Religion, ReligionPublic,
                 ReligionPrivate, GodInequality,
-                EducationYears)
+                EducationYears, PeaceVote, AbortionLegal, QueerMarriageOK, DrugsLegal)
 
 # Add total household wealth to the indiv table
 indiv$hh_wealth <- su$TotalValue[match(indiv$HHID, su$HHID)]
@@ -219,6 +227,53 @@ indiv <- indiv %>% mutate_at(vars(HHID, 3:4, 8:11), ~replace(., is.na(.), "UNKNO
 indiv$RelPub <- ifelse(indiv$ReligionPublic == "AFEWTIMESPERWEEK" | indiv$ReligionPublic=="MORETHANONCEPERWEEK" | indiv$ReligionPublic == "ONCEPERWEEK", 1, 2) 
 indiv$RelPri <- ifelse(indiv$ReligionPrivate == "EVERYDAY" | indiv$ReligionPrivate == "MORETHANONCEPERDAY", 1, 2)
 indiv$GodIneq <- ifelse(indiv$GodInequality == "YES", 1, 2)
+
+# Specify political opinions 
+indiv$PeaceVote[which(indiv$PeaceVote == "STRONGLYDISAGREE")] <- "DISAGREE"
+indiv$PeaceVote[which(indiv$PeaceVote == "STRONGLYAGREE")] <- "AGREE"
+indiv$PeaceVote[is.na(indiv$PeaceVote)] <- "DONTKNOW"
+
+indiv$AbortionLegal[which(indiv$AbortionLegal == "STRONGLYDISAGREE")] <- "DISAGREE"
+indiv$AbortionLegal[which(indiv$AbortionLegal == "STRONGLYAGREE")] <- "AGREE"
+indiv$AbortionLegal[is.na(indiv$AbortionLegal)] <- "DONTKNOW"
+
+indiv$QueerMarriageOK[which(indiv$QueerMarriageOK == "STRONGLYDISAGREE")] <- "DISAGREE"
+indiv$QueerMarriageOK[which(indiv$QueerMarriageOK == "STRONGLYAGREE")] <- "AGREE"
+indiv$QueerMarriageOK[is.na(indiv$QueerMarriageOK)] <- "DONTKNOW"
+
+indiv$DrugsLegal[which(indiv$DrugsLegal == "STRONGLYDISAGREE")] <- "DISAGREE"
+indiv$DrugsLegal[which(indiv$DrugsLegal == "STRONGLYAGREE")] <- "AGREE"
+indiv$DrugsLegal[is.na(indiv$DrugsLegal)] <- "DONTKNOW"
+
+N = nrow(indiv)
+phys_dist = pol_dist <- matrix( NA, nrow = N, ncol = N)
+age_dist = wealth_dist <- matrix( NA, nrow = N, ncol = N)
+R = c("AGREE","DISAGREE","DONTKNOW")
+
+M = matrix(0, nrow=3, ncol=3)
+M[1,1] = 1
+M[1,2] = -1
+
+M[2,1] = -1
+M[2,2] = 1
+
+indiv$hh_wealth <- (indiv$hh_wealth +20)
+
+for( i in 1:N){
+  for(j in 1:N){
+  bob=c()
+  bob[1] = M[which(indiv$PeaceVote[i]==R),which(indiv$PeaceVote[j]==R)]
+  bob[2] = M[which(indiv$AbortionLegal[i]==R),which(indiv$AbortionLegal[j]==R)]
+  bob[3] = M[which(indiv$QueerMarriageOK[i]==R),which(indiv$QueerMarriageOK[j]==R)]
+  bob[4] = M[which(indiv$DrugsLegal[i]==R),which(indiv$DrugsLegal[j]==R)]
+  pol_dist[i,j]=sum(bob)  
+  phys_dist[i,j] = su_distance[which(indiv$HHID[i]==colnames(su_distance)),which(indiv$HHID[j]==colnames(su_distance))]
+  age_dist[i,j] = abs(indiv$Age[i] - indiv$Age[j])
+  wealth_dist[i,j] = abs(log(indiv$hh_wealth[i]) - log(indiv$hh_wealth[j]))
+    }
+}
+
+phys_dist <- phys_dist/max(phys_dist, na.rm = TRUE)
 
 # Filter individual dataframe by the IDs present in the friendship matrix
 indiv <- indiv %>% filter(PID %in% rownames(A_Friends))
@@ -245,3 +300,8 @@ write.csv(A_Work, "/Users/danielredhead/friendship-Colombia/data/BS_working.csv"
 write.csv(A_Exchange, "/Users/danielredhead/friendship-Colombia/data/BS_exchange.csv")
 write.csv(A_Kin, "/Users/danielredhead/friendship-Colombia/data/BS_kinship.csv")
 write.csv(indiv, "/Users/danielredhead/friendship-Colombia/data/BS_individuals.csv")
+write.csv(pol_dist, "/Users/danielredhead/friendship-Colombia/data/BS_political_distance.csv")
+write.csv(A_Atrakt, "/Users/danielredhead/friendship-Colombia/data/BS_attractiveness.csv")
+write.csv(phys_dist, "/Users/danielredhead/friendship-Colombia/data/BS_physical_distance.csv")
+write.csv(age_dist, "/Users/danielredhead/friendship-Colombia/data/BS_age_distance.csv")
+write.csv(wealth_dist, "/Users/danielredhead/friendship-Colombia/data/BS_wealth_distance.csv")
