@@ -25,51 +25,53 @@ normalize <- function(y) {
 library(STRAND)
 library(reshape2)
 
-#distance <- as.matrix(read.table("./analyses/preliminary-analyses/su_distance.csv", sep = ","))
 friends <- as.matrix(read.table("./data/BS_friends.csv", sep = ",", row.names = 1, header = TRUE))
 relatedness <- as.matrix(read.table("./data/BS_kinship.csv", sep = ",", row.names = 1, header = TRUE))
 sharing <- as.matrix(read.table("./data/BS_exchange.csv", sep = ",", row.names = 1, header = TRUE))
 work <- as.matrix(read.table("./data/BS_working.csv", sep = ",", row.names = 1, header = TRUE))
+attractiveness <- as.matrix(read.table("./data/BS_attractiveness.csv", sep = ",", row.names = 1, header = TRUE))
+distance <- as.matrix(read.table("./data/BS_physical_distance.csv", sep = ",", row.names = 1, header = TRUE))
+pol_distance <- as.matrix(read.table("./data/BS_political_distance.csv", sep = ",", row.names = 1, header = TRUE))
+wealth_distance <- as.matrix(read.table("./data/BS_wealth_distance.csv", sep = ",", row.names = 1, header = TRUE))
+age_distance <- as.matrix(read.table("./data/BS_age_distance.csv", sep = ",", row.names = 1, header = TRUE))
+
 
 att <- read.csv("./data/BS_individuals.csv", sep = ",")
 att <- att[att$PID %in% rownames(friends),]
 att$Sex[att$Sex == "F"] <- 1
 att$Sex[att$Sex == "M"] <- 0 
 
-# Creat binary matrix of whether individuals are the same religion
-matrix <- data.frame('i' = att$PID, 'rel_i' = att$Religion)
-matrix1 <- data.frame('j' = att$PID, 'rel_j' = att$Religion)
-rel_df <- merge(matrix, matrix1)
-rel_df <- rel_df[which(rel_df$i != rel_df$j),]
-rel_df$value <- ifelse((rel_df$rel_i == rel_df$rel_j), 1, 0)
-cleaned_df <- rel_df[,-2]
-cleaned_df <- cleaned_df[,-3]
-same_religion <- acast(cleaned_df, i ~ j , value.var='value')
-same_religion[is.na(same_religion)] <- 1
-same_religion <- same_religion[match(rownames(friends), rownames(same_religion)), match(colnames(friends), colnames(same_religion))]
-diag(same_religion) <- 0
+att$Religion[att$Religion %in% c("CHRISTIAN", "EVANGELICAL","PENTECOSTAL", "SEVENTH DAY ADVENTIST")] <- "OTHER"
+att$Religion[att$Religion == "SPIRITUAL"] <- "NONE"
 
 # Create the STRAND data object
 nets <- list( Friends = friends)
 
-dyad <- list( Relatedness = relatedness, Sharing = sharing, Same_Religion = same_religion)
+dyad <- list( Relatedness = relatedness, Sharing = sharing, 
+              Political = pol_distance, Proximity = distance,
+              Attractiveness = attractiveness, Age_dist = age_distance, 
+              Wealth_dist = wealth_distance)
 
-group_ids <- as.factor(att$Ethnicity)
+group_ids <- data.frame(Ethnicity = as.factor(att$Ethnicity), 
+                        Sex = as.factor(ifelse(att$Sex == 1, "FEMALE", "MALE")),
+                        Religion = as.factor(att$Religion))
 
-indiv <-  data.frame( Age = center(att$Age), Female = att$Sex, Grip = center(att$Grip), 
-					Religion = as.factor(att$Religion), Wealth = center(att$hh_wealth))
+indiv <-  data.frame(Age = center(att$Age), Grip = center(att$Grip), 
+					Wealth = center(log(att$hh_wealth+20)))
 
-model_dat <- make_strand_data( self_report = nets,
-group_ids = group_ids, individual_covariates = indiv, dyadic_covariates = dyad
-)
+model_dat <- make_strand_data(self_report = nets,
+                              block_covariates = group_ids, 
+                              individual_covariates = indiv, 
+                              dyadic_covariates = dyad)
 
 fit <- fit_block_plus_social_relations_model( data=model_dat,
-      focal_regression = ~ Age + Female + Grip + Religion + Wealth,
-      target_regression = ~ Age + Female + Grip + Religion + Wealth,
-      dyad_regression = ~ Relatedness + Sharing + Same_Religion,
+      block_regression = ~ Religion + Sex + Ethnicity,
+      focal_regression = ~ Age + Grip + Wealth,
+      target_regression = ~  1,
+      dyad_regression = ~ Relatedness + Sharing + Attractiveness + Proximity + Age_dist + Wealth_dist + Political,
        mode="mcmc",
        stan_mcmc_parameters = list(chains = 1, parallel_chains = 1, refresh = 1,
-    iter_warmup = 1000, iter_sampling = 4000,
+    iter_warmup = 1000, iter_sampling = 1000,
      max_treedepth = NULL, adapt_delta = .98)
        )
 
