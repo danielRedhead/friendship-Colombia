@@ -250,6 +250,9 @@ phys_dist = pol_dist <- matrix( NA, nrow = N, ncol = N)
 age_dist = wealth_dist <- matrix( NA, nrow = N, ncol = N)
 R = c("AGREE","DISAGREE","DONTKNOW")
 
+colnames(phys_dist) = colnames(pol_dist) = colnames(age_dist) = colnames(wealth_dist) = indiv$PID
+rownames(phys_dist) = rownames(pol_dist) = rownames(age_dist) = rownames(wealth_dist) = indiv$PID
+
 M = matrix(0, nrow=3, ncol=3)
 M[1,1] = 1
 M[1,2] = -1
@@ -283,6 +286,7 @@ A_Friends <- A_Friends[which(rownames(A_Friends) %in% indiv$PID), which(rownames
 A_Exchange <- A_Exchange[which(rownames(A_Exchange) %in% indiv$PID), which(rownames(A_Exchange) %in% indiv$PID)]
 A_Work <- A_Work[which(rownames(A_Work) %in% indiv$PID), which(rownames(A_Work) %in% indiv$PID)]
 A_Kin <- A_Kin[which(rownames(A_Kin) %in% indiv$PID), which(rownames(A_Kin) %in% indiv$PID)]
+A_Atrakt <- A_Atrakt[which(rownames(A_Atrakt) %in% indiv$PID), which(rownames(A_Atrakt) %in% indiv$PID)]
 
 # A_Exchange <- A_Exchange[match(rownames(A_Friends), rownames(A_Exchange)), match(colnames(A_Friends), colnames(A_Exchange))]
 
@@ -294,14 +298,35 @@ all(rownames(A_Kin) == rownames(A_Friends))
 all(indiv$PID == rownames(A_Friends))
 
 
+pol_dist <- pol_dist[which(rownames(pol_dist) %in% indiv$PID), which(colnames(pol_dist) %in% indiv$PID)]
+phys_dist <- phys_dist[which(rownames(phys_dist) %in% indiv$PID), which(colnames(phys_dist) %in% indiv$PID)]
+age_dist <- age_dist[which(rownames(age_dist) %in% indiv$PID), which(colnames(age_dist) %in% indiv$PID)]
+wealth_dist <- wealth_dist[which(rownames(wealth_dist) %in% indiv$PID), which(colnames(wealth_dist) %in% indiv$PID)]
+
+
+pol_dist <- pol_dist[match(indiv$PID, rownames(pol_dist)),match(indiv$PID, colnames(pol_dist))]
+phys_dist <- phys_dist[match(indiv$PID, rownames(phys_dist)),match(indiv$PID, colnames(phys_dist))]
+age_dist <- age_dist[match(indiv$PID, rownames(age_dist)),match(indiv$PID, colnames(age_dist))]
+wealth_dist <- wealth_dist[match(indiv$PID, rownames(wealth_dist)),match(indiv$PID, colnames(wealth_dist))]
+
+
+
+sum(colnames(A_Atrakt)!=colnames(A_Friends))
+sum(colnames(pol_dist)!=colnames(A_Friends))
+sum(colnames(phys_dist)!=colnames(A_Friends))
+sum(colnames(age_dist)!=colnames(A_Friends))
+sum(colnames(wealth_dist)!=colnames(A_Friends))
+
+
 # Write out data
-write.csv(A_Friends, "/Users/danielredhead/friendship-Colombia/data/BS_friends.csv")
-write.csv(A_Work, "/Users/danielredhead/friendship-Colombia/data/BS_working.csv")
-write.csv(A_Exchange, "/Users/danielredhead/friendship-Colombia/data/BS_exchange.csv")
-write.csv(A_Kin, "/Users/danielredhead/friendship-Colombia/data/BS_kinship.csv")
-write.csv(indiv, "/Users/danielredhead/friendship-Colombia/data/BS_individuals.csv")
-write.csv(pol_dist, "/Users/danielredhead/friendship-Colombia/data/BS_political_distance.csv")
-write.csv(A_Atrakt, "/Users/danielredhead/friendship-Colombia/data/BS_attractiveness.csv")
-write.csv(phys_dist, "/Users/danielredhead/friendship-Colombia/data/BS_physical_distance.csv")
-write.csv(age_dist, "/Users/danielredhead/friendship-Colombia/data/BS_age_distance.csv")
-write.csv(wealth_dist, "/Users/danielredhead/friendship-Colombia/data/BS_wealth_distance.csv")
+write.csv(A_Friends, "data/BS_friends.csv")
+write.csv(A_Work, "data/BS_working.csv")
+write.csv(A_Exchange, "data/BS_exchange.csv")
+write.csv(A_Kin, "data/BS_kinship.csv")
+write.csv(indiv, "data/BS_individuals.csv")
+write.csv(pol_dist, "data/BS_political_distance.csv")
+write.csv(A_Atrakt, "data/BS_attractiveness.csv")
+write.csv(phys_dist, "data/BS_physical_distance.csv")
+write.csv(age_dist, "data/BS_age_distance.csv")
+write.csv(wealth_dist, "data/BS_wealth_distance.csv")
+
