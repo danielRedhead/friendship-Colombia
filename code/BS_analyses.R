@@ -10,8 +10,9 @@ rm(list = ls())
 
 # Set the working directory
 # You will need to specify the correct file path for your computer
-#setwd("/Users/danielredhead/friendship-Colombia")
-setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main")       # working directory for apple
+#setwd("/Users/danielredhead/friendship-Colombia")                     # Dan's working directory
+#setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main") # Cody's working directory
+#setwd("~/Desktop/friendship paper")                                   # Augusto's working directory
 
 # Load function
 normalize <- function(y) {
@@ -34,10 +35,9 @@ distance <- as.matrix(read.table("./data/BS_physical_distance.csv", sep = ",", r
 pol_distance <- as.matrix(read.table("./data/BS_political_distance.csv", sep = ",", row.names = 1, header = TRUE))
 wealth_distance <- as.matrix(read.table("./data/BS_wealth_distance.csv", sep = ",", row.names = 1, header = TRUE))
 age_distance <- as.matrix(read.table("./data/BS_age_distance.csv", sep = ",", row.names = 1, header = TRUE))
-
+atrakt_distance <- as.matrix(read.table("./data/BS_atrakt_dist.csv", sep = ",", row.names = 1, header = TRUE))
 edu_distance <- as.matrix(read.table("./data/BS_edu_distance.csv", sep = ",", row.names = 1, header = TRUE))
 bmi_distance <- as.matrix(read.table("./data/BS_bmi_distance.csv", sep = ",", row.names = 1, header = TRUE))
-
 pv_distance <- as.matrix(read.table("./data/BS_pv_distance.csv", sep = ",", row.names = 1, header = TRUE))
 dl_distance <- as.matrix(read.table("./data/BS_dl_distance.csv", sep = ",", row.names = 1, header = TRUE))
 al_distance <- as.matrix(read.table("./data/BS_al_distance.csv", sep = ",", row.names = 1, header = TRUE))
@@ -54,7 +54,7 @@ att$Religion[att$Religion == "SPIRITUAL"] <- "NONE"
 
 att$Ethnicity[att$Ethnicity == "AFROEMBERA"] <- "AFROCOLOMBIAN"
 
-N=93
+N <- 93
 
 # Create the STRAND data object
 nets <- list( Friends = friends[1:N,1:N])
@@ -70,7 +70,8 @@ dyad <- list( Relatedness = relatedness[1:N,1:N],
               PV = pv_distance[1:N,1:N],
               DL = dl_distance[1:N,1:N],
               AL = al_distance[1:N,1:N],
-              QM = qm_distance[1:N,1:N]
+              QM = qm_distance[1:N,1:N],
+              Atrakt_dist = atrakt_distance[1:N, 1:N]
               )
 
 group_ids <- data.frame(Ethnicity = as.factor(att$Ethnicity[1:N]), 
@@ -86,18 +87,19 @@ indiv <-  data.frame(Age = center(att$Age[1:N]),
                      Punish = center(att$ReduceOther[1:N]),
                      Edu = center(att$EducationYears[1:N]),
                      RS = att$ChildrenAlive[1:N],
-                     Attractiveness = colSums(attractiveness[1:N,1:N]))
+                     Attractiveness = att$A_S[1:N])
 
 model_dat <- make_strand_data(self_report = nets,
                               block_covariates = group_ids, 
                               individual_covariates = indiv, 
                               dyadic_covariates = dyad)
 
+#model
 fit <- fit_block_plus_social_relations_model( data=model_dat,
       block_regression = ~ Sex + Religion + Ethnicity,
       focal_regression = ~ 1,
-      target_regression = ~  Give + Leave + Punish + Attractiveness + RS +  Grip + Wealth + Age + Edu + BMI,
-      dyad_regression = ~ Relatedness  + Phys_dist  + Polit_dist +  Wealth_dist + Age_dist + Edu_dist + BMI_dist,
+      target_regression = ~ Give + Leave + Punish + Attractiveness + RS +  Grip + Wealth + Age + Edu + BMI,
+      dyad_regression = ~ Sharing + Relatedness  + Phys_dist  + Polit_dist +  Wealth_dist + Age_dist + Edu_dist + BMI_dist + Atrakt_dist,
        mode="mcmc",
        stan_mcmc_parameters = list(chains = 1, parallel_chains = 1, refresh = 1,
     iter_warmup = 1000, iter_sampling = 1000,
@@ -106,14 +108,7 @@ fit <- fit_block_plus_social_relations_model( data=model_dat,
 
 res <- summarize_strand_results(fit)
 
-
-
-
-
-
-
-
-
+#plotting results
 strand_caterpillar_plot = function(results, submodels=NULL, normalized=FALSE, only_slopes=TRUE, only_technicals=FALSE){
   dat = vector("list",length(results$summary_list))
 

@@ -1,6 +1,7 @@
 # Set working directory
-# setwd("~/Desktop/Colombian data")
-setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main")
+setwd("~/Desktop/friendship paper")                                   # Augusto's working directory
+#setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main") # Cody's working directory
+
 # Load packages
 library(kinship2)
 library(reshape2)
@@ -9,22 +10,22 @@ library(igraph)
 library(tidyverse)
 
 # Load data
-indiv <- read.csv("data/PartnerChoice-Ross-Site1-Individual.csv",
+indiv <- read.csv("Data/PartnerChoice-Ross-Site1-Individual.csv",
                   header = TRUE,
                   as.is = TRUE)
 
-su <- read.csv("data/PartnerChoice-Ross-Site1-Household.csv", 
+su <- read.csv("Data/PartnerChoice-Ross-Site1-Household.csv", 
                header = TRUE, 
                as.is = TRUE)
 
-nl <- read.csv("data/PartnerChoice-Ross-Site1-Networks.csv",
+nl <- read.csv("Data/PartnerChoice-Ross-Site1-Networks.csv",
                na = "", 
                header = TRUE,
                as.is = TRUE)
 
-kin <- read.csv("data/PartnerChoice-Ross-Site1-Kinship.csv")
+kin <- read.csv("Data/PartnerChoice-Ross-Site1-Kinship.csv")
 
-gl <- read.csv(file = "data/PartnerChoice-Ross-Site1-Games.csv",
+gl <- read.csv(file = "Data/PartnerChoice-Ross-Site1-Games.csv",
                na = "",
                header = TRUE,
                as.is = TRUE)
@@ -156,6 +157,11 @@ rownames(A) <- colnames(A) <- labels
 A[G[, 1:2]] <- G[, 3]
 A_Atrakt <- ifelse(A==0, 0,1)
 
+
+
+
+
+
 # Loan money
 elExchange <- rbind(el[[3]], el[[4]])
 snExchange <- graph.data.frame(d = elExchange, directed = TRUE)
@@ -253,9 +259,9 @@ age_dist = wealth_dist <- matrix( NA, nrow = N, ncol = N)
 edu_dist = bmi_dist <- matrix( NA, nrow = N, ncol = N)
 R = c("AGREE","DISAGREE","DONTKNOW")
 
-AL_dist <- QM_dist <- DL_dist <- PV_dist <- matrix( NA, nrow = N, ncol = N)
+AL_dist <- QM_dist <- DL_dist <- PV_dist <-  matrix( NA, nrow = N, ncol = N)
 colnames(AL_dist) = colnames(QM_dist) = colnames(DL_dist) = colnames(PV_dist) = indiv$PID
-rownames(AL_dist) = rownames(QM_dist) = rownames(DL_dist) = rownames(PV_dist) = indiv$PID
+rownames(AL_dist) = rownames(QM_dist) = rownames(DL_dist) = rownames(PV_dist)  = indiv$PID
 
 colnames(edu_dist) = colnames(bmi_dist) = colnames(phys_dist) = colnames(pol_dist) = colnames(age_dist) = colnames(wealth_dist) = indiv$PID
 rownames(edu_dist) = rownames(bmi_dist) = rownames(phys_dist) = rownames(pol_dist) = rownames(age_dist) = rownames(wealth_dist) = indiv$PID
@@ -282,6 +288,7 @@ for( i in 1:N){
   wealth_dist[i,j] = abs(log(indiv$hh_wealth[i]) - log(indiv$hh_wealth[j]))
   bmi_dist[i,j] = abs(indiv$BMI[i] - indiv$BMI[j])
   edu_dist[i,j] = abs(indiv$EducationYears[i] - indiv$EducationYears[j])
+  
     }
 }
 
@@ -341,22 +348,38 @@ sum(colnames(AL_dist)!=colnames(A_Friends))
 sum(colnames(QM_dist)!=colnames(A_Friends))
 sum(colnames(DL_dist)!=colnames(A_Friends))
 
+#build attractiveness scores
+attractiveness_scores <- colSums(A_Atrakt) #number of attractiveness nominations received per individual
+
+#create matrix of attractiveness distance
+atrakt_dist <-matrix(NA, nrow = nrow(A_Friends), ncol = nrow(A_Friends)) #create NxN matrix with N = elements of friends matrix
+#loop over the elements of the empty matrix to get attractiveness distance
+for(i in 1:nrow(A_Friends)){
+  for(j in 1:nrow(A_Friends)){
+    atrakt_dist[i,j] = abs(attractiveness_scores[i] - attractiveness_scores[j])
+  }
+}
+colnames(atrakt_dist) = rownames(atrakt_dist) = colnames(A_Atrakt)
+
+#add attractiveness scores to the indiv dataframe
+temp_df <- data.frame(PID = names(attractiveness_scores), A_S = attractiveness_scores) #make attractiveness vector into a temporary df
+indiv <- left_join(indiv, temp_df, by = "PID") #merge with the indiv df based on personal IDs
 
 # Write out data
+write.csv(atrakt_dist, "data/BS_atrakt_dist.csv")
 write.csv(A_Friends, "data/BS_friends.csv")
- write.csv(A_Work, "data/BS_working.csv")
- write.csv(A_Exchange, "data/BS_exchange.csv")
- write.csv(A_Kin, "data/BS_kinship.csv")
- write.csv(indiv, "data/BS_individuals.csv")
- write.csv(pol_dist, "data/BS_political_distance.csv")
- write.csv(A_Atrakt, "data/BS_attractiveness.csv")
- write.csv(phys_dist, "data/BS_physical_distance.csv")
- write.csv(age_dist, "data/BS_age_distance.csv")
- write.csv(wealth_dist, "data/BS_wealth_distance.csv")
- write.csv(edu_dist, "data/BS_edu_distance.csv")
- write.csv(bmi_dist, "data/BS_bmi_distance.csv")
-
- write.csv(PV_dist, "data/BS_pv_distance.csv")
- write.csv(AL_dist, "data/BS_al_distance.csv")
- write.csv(QM_dist, "data/BS_qm_distance.csv")
- write.csv(DL_dist, "data/BS_dl_distance.csv")
+write.csv(A_Work, "data/BS_working.csv")
+write.csv(A_Exchange, "data/BS_exchange.csv")
+write.csv(A_Kin, "data/BS_kinship.csv")
+write.csv(indiv, "data/BS_individuals.csv")
+write.csv(pol_dist, "data/BS_political_distance.csv")
+write.csv(A_Atrakt, "data/BS_attractiveness.csv")
+write.csv(phys_dist, "data/BS_physical_distance.csv")
+write.csv(age_dist, "data/BS_age_distance.csv")
+write.csv(wealth_dist, "data/BS_wealth_distance.csv")
+write.csv(edu_dist, "data/BS_edu_distance.csv")
+write.csv(bmi_dist, "data/BS_bmi_distance.csv")
+write.csv(PV_dist, "data/BS_pv_distance.csv")
+write.csv(AL_dist, "data/BS_al_distance.csv")
+write.csv(QM_dist, "data/BS_qm_distance.csv")
+write.csv(DL_dist, "data/BS_dl_distance.csv")
