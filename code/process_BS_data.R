@@ -1,6 +1,6 @@
 # Set working directory
 # setwd("~/Desktop/Colombian data")
-setwd("/Users/danielredhead/Dropbox/Augusto")
+setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main")
 # Load packages
 library(kinship2)
 library(reshape2)
@@ -9,22 +9,22 @@ library(igraph)
 library(tidyverse)
 
 # Load data
-indiv <- read.csv("Data/PartnerChoice-Ross-Site1-Individual.csv",
+indiv <- read.csv("data/PartnerChoice-Ross-Site1-Individual.csv",
                   header = TRUE,
                   as.is = TRUE)
 
-su <- read.csv("Data/PartnerChoice-Ross-Site1-Household.csv", 
+su <- read.csv("data/PartnerChoice-Ross-Site1-Household.csv", 
                header = TRUE, 
                as.is = TRUE)
 
-nl <- read.csv("Data/PartnerChoice-Ross-Site1-Networks.csv",
+nl <- read.csv("data/PartnerChoice-Ross-Site1-Networks.csv",
                na = "", 
                header = TRUE,
                as.is = TRUE)
 
-kin <- read.csv("Data/PartnerChoice-Ross-Site1-Kinship.csv")
+kin <- read.csv("data/PartnerChoice-Ross-Site1-Kinship.csv")
 
-gl <- read.csv(file = "Data/PartnerChoice-Ross-Site1-Games.csv",
+gl <- read.csv(file = "data/PartnerChoice-Ross-Site1-Games.csv",
                na = "",
                header = TRUE,
                as.is = TRUE)
@@ -206,7 +206,9 @@ A_Kin <- A
 indiv <- select(indiv, PID, HHID, Sex, Ethnicity, Age, 
                 BMI, Grip, Religion, ReligionPublic,
                 ReligionPrivate, GodInequality,
-                EducationYears, PeaceVote, AbortionLegal, QueerMarriageOK, DrugsLegal)
+                EducationYears, PeaceVote, AbortionLegal, QueerMarriageOK, DrugsLegal,
+                GiveOther, LeaveOther, ReduceOther, ChildrenAlive
+                )
 
 # Add total household wealth to the indiv table
 indiv$hh_wealth <- su$TotalValue[match(indiv$HHID, su$HHID)]
@@ -248,10 +250,15 @@ indiv$DrugsLegal[is.na(indiv$DrugsLegal)] <- "DONTKNOW"
 N = nrow(indiv)
 phys_dist = pol_dist <- matrix( NA, nrow = N, ncol = N)
 age_dist = wealth_dist <- matrix( NA, nrow = N, ncol = N)
+edu_dist = bmi_dist <- matrix( NA, nrow = N, ncol = N)
 R = c("AGREE","DISAGREE","DONTKNOW")
 
-colnames(phys_dist) = colnames(pol_dist) = colnames(age_dist) = colnames(wealth_dist) = indiv$PID
-rownames(phys_dist) = rownames(pol_dist) = rownames(age_dist) = rownames(wealth_dist) = indiv$PID
+AL_dist <- QM_dist <- DL_dist <- PV_dist <- matrix( NA, nrow = N, ncol = N)
+colnames(AL_dist) = colnames(QM_dist) = colnames(DL_dist) = colnames(PV_dist) = indiv$PID
+rownames(AL_dist) = rownames(QM_dist) = rownames(DL_dist) = rownames(PV_dist) = indiv$PID
+
+colnames(edu_dist) = colnames(bmi_dist) = colnames(phys_dist) = colnames(pol_dist) = colnames(age_dist) = colnames(wealth_dist) = indiv$PID
+rownames(edu_dist) = rownames(bmi_dist) = rownames(phys_dist) = rownames(pol_dist) = rownames(age_dist) = rownames(wealth_dist) = indiv$PID
 
 M = matrix(0, nrow=3, ncol=3)
 M[1,1] = 1
@@ -265,14 +272,16 @@ indiv$hh_wealth <- (indiv$hh_wealth +20)
 for( i in 1:N){
   for(j in 1:N){
   bob=c()
-  bob[1] = M[which(indiv$PeaceVote[i]==R),which(indiv$PeaceVote[j]==R)]
-  bob[2] = M[which(indiv$AbortionLegal[i]==R),which(indiv$AbortionLegal[j]==R)]
-  bob[3] = M[which(indiv$QueerMarriageOK[i]==R),which(indiv$QueerMarriageOK[j]==R)]
-  bob[4] = M[which(indiv$DrugsLegal[i]==R),which(indiv$DrugsLegal[j]==R)]
-  pol_dist[i,j]=sum(bob)  
-  phys_dist[i,j] = su_distance[which(indiv$HHID[i]==colnames(su_distance)),which(indiv$HHID[j]==colnames(su_distance))]
+  PV_dist[i,j] = bob[1] = M[which(indiv$PeaceVote[i]==R),which(indiv$PeaceVote[j]==R)]
+  AL_dist[i,j] = bob[2] = M[which(indiv$AbortionLegal[i]==R),which(indiv$AbortionLegal[j]==R)]
+  QM_dist[i,j] = bob[3] = M[which(indiv$QueerMarriageOK[i]==R),which(indiv$QueerMarriageOK[j]==R)]
+  DL_dist[i,j] = bob[4] = M[which(indiv$DrugsLegal[i]==R),which(indiv$DrugsLegal[j]==R)]
+  pol_dist[i,j]=length(which(bob==-1))  
+  phys_dist[i,j] = su_distance[which(indiv$HHID[i]==colnames(su_distance)),which(indiv$HHID[j]==colnames(su_distance))]*ifelse(indiv$Ethnicity[i]==indiv$Ethnicity[j],1,0)
   age_dist[i,j] = abs(indiv$Age[i] - indiv$Age[j])
   wealth_dist[i,j] = abs(log(indiv$hh_wealth[i]) - log(indiv$hh_wealth[j]))
+  bmi_dist[i,j] = abs(indiv$BMI[i] - indiv$BMI[j])
+  edu_dist[i,j] = abs(indiv$EducationYears[i] - indiv$EducationYears[j])
     }
 }
 
@@ -309,6 +318,14 @@ phys_dist <- phys_dist[match(indiv$PID, rownames(phys_dist)),match(indiv$PID, co
 age_dist <- age_dist[match(indiv$PID, rownames(age_dist)),match(indiv$PID, colnames(age_dist))]
 wealth_dist <- wealth_dist[match(indiv$PID, rownames(wealth_dist)),match(indiv$PID, colnames(wealth_dist))]
 
+edu_dist <- edu_dist[match(indiv$PID, rownames(edu_dist)),match(indiv$PID, colnames(edu_dist))]
+bmi_dist <- bmi_dist[match(indiv$PID, rownames(bmi_dist)),match(indiv$PID, colnames(bmi_dist))]
+
+PV_dist <- PV_dist[match(indiv$PID, rownames(PV_dist)),match(indiv$PID, colnames(PV_dist))]
+AL_dist <- AL_dist[match(indiv$PID, rownames(AL_dist)),match(indiv$PID, colnames(AL_dist))]
+QM_dist <- QM_dist[match(indiv$PID, rownames(QM_dist)),match(indiv$PID, colnames(QM_dist))]
+DL_dist <- DL_dist[match(indiv$PID, rownames(DL_dist)),match(indiv$PID, colnames(DL_dist))]
+
 
 
 sum(colnames(A_Atrakt)!=colnames(A_Friends))
@@ -316,16 +333,30 @@ sum(colnames(pol_dist)!=colnames(A_Friends))
 sum(colnames(phys_dist)!=colnames(A_Friends))
 sum(colnames(age_dist)!=colnames(A_Friends))
 sum(colnames(wealth_dist)!=colnames(A_Friends))
+sum(colnames(edu_dist)!=colnames(A_Friends))
+sum(colnames(bmi_dist)!=colnames(A_Friends))
+
+sum(colnames(PV_dist)!=colnames(A_Friends))
+sum(colnames(AL_dist)!=colnames(A_Friends))
+sum(colnames(QM_dist)!=colnames(A_Friends))
+sum(colnames(DL_dist)!=colnames(A_Friends))
 
 
 # Write out data
-write.csv(A_Friends, "/Users/danielredhead/friendship-Colombia/data/BS_friends.csv")
- write.csv(A_Work, "/Users/danielredhead/friendship-Colombia/data/BS_working.csv")
- write.csv(A_Exchange, "/Users/danielredhead/friendship-Colombia/data/BS_exchange.csv")
- write.csv(A_Kin, "/Users/danielredhead/friendship-Colombia/data/BS_kinship.csv")
- write.csv(indiv, "/Users/danielredhead/friendship-Colombia/data/BS_individuals.csv")
- write.csv(pol_dist, "/Users/danielredhead/friendship-Colombia/data/BS_political_distance.csv")
- write.csv(A_Atrakt, "/Users/danielredhead/friendship-Colombia/data/BS_attractiveness.csv")
- write.csv(phys_dist, "/Users/danielredhead/friendship-Colombia/data/BS_physical_distance.csv")
- write.csv(age_dist, "/Users/danielredhead/friendship-Colombia/data/BS_age_distance.csv")
- write.csv(wealth_dist, "/Users/danielredhead/friendship-Colombia/data/BS_wealth_distance.csv")
+write.csv(A_Friends, "data/BS_friends.csv")
+ write.csv(A_Work, "data/BS_working.csv")
+ write.csv(A_Exchange, "data/BS_exchange.csv")
+ write.csv(A_Kin, "data/BS_kinship.csv")
+ write.csv(indiv, "data/BS_individuals.csv")
+ write.csv(pol_dist, "data/BS_political_distance.csv")
+ write.csv(A_Atrakt, "data/BS_attractiveness.csv")
+ write.csv(phys_dist, "data/BS_physical_distance.csv")
+ write.csv(age_dist, "data/BS_age_distance.csv")
+ write.csv(wealth_dist, "data/BS_wealth_distance.csv")
+ write.csv(edu_dist, "data/BS_edu_distance.csv")
+ write.csv(bmi_dist, "data/BS_bmi_distance.csv")
+
+ write.csv(PV_dist, "data/BS_pv_distance.csv")
+ write.csv(AL_dist, "data/BS_al_distance.csv")
+ write.csv(QM_dist, "data/BS_qm_distance.csv")
+ write.csv(DL_dist, "data/BS_dl_distance.csv")
