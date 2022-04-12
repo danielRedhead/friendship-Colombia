@@ -39,12 +39,14 @@ kin$gender[kin$Sex == "F"] <- 2
 kin$gender[is.na(kin$Sex)] <- 3
 kin$gender[kin$Sex == "NA"] <- 3
 
+#create kinship tree
 ped <- pedigree(id = kin$PID, 
                 dadid = kin$FID, 
                 momid = kin$MID, 
                 sex = kin$gender,
                 missid = 0)
 
+#edge list of relatedness coefficients
 rel <- melt(2*(as.matrix(kinship(ped))),
             varnames = c('i', 'j'),
             value.name = "r",
@@ -90,8 +92,8 @@ su_r <- data.frame(su_dyad = names(su_r),
 # SPECIFY DISTANCE MATRIX
 #################################################
 
+#household proximity matrix
 su_distance <- distm(cbind(su$X/50, su$Y/50))
-
 rownames(su_distance) = su$HHID
 colnames(su_distance) = su$HHID
 
@@ -104,18 +106,15 @@ ul1 <- melt(su_distance,
 ul1$first <- ifelse(as.character(ul1$ui) < as.character(ul1$uj),
                     paste(ul1$ui),
                     paste(ul1$uj))
-
 ul1$second <- ifelse(as.character(ul1$ui) > as.character(ul1$uj),
                      paste(ul1$ui),
                      paste(ul1$uj))
-
 ul1$su_dyad <- paste(ul1$first, 
                      "_",
                      ul1$second, 
                      sep = "")
 
 # combine kinship & distance data
-
 unit_dyads <- merge(ul1[, c("su_dyad", "distance")],
                     su_r[, c("su_dyad", "avg_r")],
                     by = "su_dyad")
@@ -137,9 +136,8 @@ for(i in 1:6){
   gel[[i]]<- gl[which(gl$Question == i), ]
 }
 
+#take the first element of the list (giving game) and covert it to a matrix
 elGive <- rbind(gel[[1]])
-
-# Give
 G <- as.matrix(elGive)
 G[which(G == "   ")] <- NA
 G[which(G == "E4G")] <- NA
@@ -150,7 +148,7 @@ rownames(A) <- colnames(A) <- labels
 A[G[, 1:2]] <- as.numeric(G[, 3])
 A_Give <- A
 
-# Attrakt
+#take the fourth element of the gel list (attactiveness) and convert it to a matrix
 G <- as.matrix(gel[[4]])
 G <- G[complete.cases(G), ]
 labels <- unique(c(G[, 1], G[, 2]))
@@ -164,22 +162,24 @@ elExchange <- rbind(el[[3]], el[[4]])
 snExchange <- graph.data.frame(d = elExchange, directed = TRUE)
 
 # Work with
-elBehavioral <- rbind(el[[2]])
-snBehavioral <- graph.data.frame(d = elBehavioral, directed = TRUE) 
+elWork <- rbind(el[[2]])
+snWork <- graph.data.frame(d = elWork, directed = TRUE) 
 
 # Friends
-elInformation <- rbind(el[[1]])
-snInformation <- graph.data.frame(d = elInformation, directed = TRUE)
+elFriends <- rbind(el[[1]])
+snFriends <- graph.data.frame(d = elFriends, directed = TRUE)
 
 ### process network data for modelling
 
-G <- as.matrix(elInformation)
-G <- G[which((G[, 1] %in% colnames(A_Give)) & G[, 2] %in% colnames(A_Give)),]
-A <- matrix(0, length(labels), length(labels))
-rownames(A) <- colnames(A) <- labels
-A[G[, 1:2]] <- rep(1, length(G[, 3]))
-A_Friends <- A
+#friendship
+G <- as.matrix(elFriends) #create matrix of friendship nominations
+G <- G[which((G[, 1] %in% colnames(A_Give)) & G[, 2] %in% colnames(A_Give)),] #filter out IDs who are not in the giving game data
+A <- matrix(0, length(labels), length(labels)) #create blank matrix
+rownames(A) <- colnames(A) <- labels           #label blank matrix
+A[G[, 1:2]] <- rep(1, length(G[, 3]))          #filling the matrix with the friendship nominations (1 for existence)
+A_Friends <- A                                 #name friendship matrix
 
+#exchange
 G <- as.matrix(elExchange)
 G <- G[which((G[, 1] %in% colnames(A_Give)) & G[, 2] %in% colnames(A_Give)),]
 A <- matrix(0, length(labels), length(labels))
@@ -187,13 +187,15 @@ rownames(A) <- colnames(A) <- labels
 A[G[, 1:2]] <- rep(1, length(G[, 3]))
 A_Exchange <- A
 
-G <- as.matrix(elBehavioral)
+#work
+G <- as.matrix(elWork)
 G <- G[which((G[, 1] %in% colnames(A_Give)) & G[, 2] %in% colnames(A_Give)),]
 A <- matrix(0, length(labels), length(labels))
 rownames(A) <- colnames(A) <- labels
 A[G[, 1:2]] <- rep(1, length(G[, 3]))
 A_Work <- A
 
+#relatedness (individual)
 G <- as.matrix(rel1)
 G <- G[which((G[, 1] %in% colnames(A_Give)) & G[, 2] %in% colnames(A_Give)),]
 A <- matrix(0, length(labels), length(labels))
@@ -201,11 +203,7 @@ rownames(A) <- colnames(A) <- labels
 A[G[ ,1:2]] <-  as.numeric(G[ ,3])
 A_Kin <- A
 
-#################################################
-# SPECIFY INDIVIDUAL-LEVEL DATA
-#################################################
-# CHECK TO SEE WHETHER THERE ARE ANY OTHER VARIABLES TO INCLUDE
-
+#select relevant individual variables
 indiv <- select(indiv, PID, HHID, Sex, Ethnicity, Age, 
                 BMI, Grip, Religion, ReligionPublic,
                 ReligionPrivate, GodInequality,
@@ -258,9 +256,9 @@ indiv$DrugsLegal[which(indiv$DrugsLegal == "STRONGLYAGREE")] <- "AGREE"
 indiv$DrugsLegal[is.na(indiv$DrugsLegal)] <- "DONTKNOW"
 
 N <- nrow(indiv) #number of individuals
-phys_dist = pol_dist <- matrix( NA, nrow = N, ncol = N) #creates NxN matrices with NA as default cell value
-age_dist = wealth_dist <- matrix( NA, nrow = N, ncol = N)
-edu_dist = bmi_dist <- matrix( NA, nrow = N, ncol = N)
+phys_dist <- pol_dist <- matrix( NA, nrow = N, ncol = N) #creates NxN matrices with NA as default cell value
+age_dist <- wealth_dist <- matrix( NA, nrow = N, ncol = N)
+edu_dist <- bmi_dist <- matrix( NA, nrow = N, ncol = N)
 R <- c("AGREE","DISAGREE","DONTKNOW") #political responses
 
 #create set of NxN empty matrices with N = individual IDs
@@ -277,7 +275,12 @@ M[1,2] = -1 #discordant opinions: -1
 M[2,1] = -1 #discordant opinions: -1
 M[2,2] = 1  #both disagree: 1
 
-indiv$hh_wealth <- (indiv$hh_wealth + 20) #modify wealth variable to make it "loggable"
+#minimum non-zero value of the wealth variable
+min_wealth <- indiv %>% 
+  select(hh_wealth) %>%     #select wealth column
+  filter(hh_wealth > 0) %>% #filter strictly positive values
+  min()                     #get minimum among those
+indiv$hh_wealth <- (indiv$hh_wealth + min_wealth) #modify wealth variable to make it "loggable"
 
 # Distance matrix
 for( i in 1:N){
@@ -308,35 +311,35 @@ A_Exchange <- A_Exchange[which(rownames(A_Exchange) %in% indiv$PID), which(rowna
 A_Work <- A_Work[which(rownames(A_Work) %in% indiv$PID), which(rownames(A_Work) %in% indiv$PID)]
 A_Kin <- A_Kin[which(rownames(A_Kin) %in% indiv$PID), which(rownames(A_Kin) %in% indiv$PID)]
 A_Atrakt <- A_Atrakt[which(rownames(A_Atrakt) %in% indiv$PID), which(rownames(A_Atrakt) %in% indiv$PID)]
-
-# A_Exchange <- A_Exchange[match(rownames(A_Friends), rownames(A_Exchange)), match(colnames(A_Friends), colnames(A_Exchange))]
-
 indiv <- indiv[match(rownames(A_Friends), indiv$PID),]
 
+#check that names match
 all(rownames(A_Exchange) == rownames(A_Friends))
 all(rownames(A_Work) == rownames(A_Friends))
 all(rownames(A_Kin) == rownames(A_Friends))
 all(indiv$PID == rownames(A_Friends))
 
+#subsetting (probably redundant)
 pol_dist <- pol_dist[which(rownames(pol_dist) %in% indiv$PID), which(colnames(pol_dist) %in% indiv$PID)]
 phys_dist <- phys_dist[which(rownames(phys_dist) %in% indiv$PID), which(colnames(phys_dist) %in% indiv$PID)]
 age_dist <- age_dist[which(rownames(age_dist) %in% indiv$PID), which(colnames(age_dist) %in% indiv$PID)]
 wealth_dist <- wealth_dist[which(rownames(wealth_dist) %in% indiv$PID), which(colnames(wealth_dist) %in% indiv$PID)]
+edu_dist <- edu_dist[which(rownames(edu_dist) %in% indiv$PID), which(colnames(edu_dist) %in% indiv$PID)]
+bmi_dist <- bmi_dist[which(rownames(bmi_dist) %in% indiv$PID), which(colnames(bmi_dist) %in% indiv$PID)]
 
+#reordering
 pol_dist <- pol_dist[match(indiv$PID, rownames(pol_dist)),match(indiv$PID, colnames(pol_dist))]
 phys_dist <- phys_dist[match(indiv$PID, rownames(phys_dist)),match(indiv$PID, colnames(phys_dist))]
 age_dist <- age_dist[match(indiv$PID, rownames(age_dist)),match(indiv$PID, colnames(age_dist))]
 wealth_dist <- wealth_dist[match(indiv$PID, rownames(wealth_dist)),match(indiv$PID, colnames(wealth_dist))]
-
 edu_dist <- edu_dist[match(indiv$PID, rownames(edu_dist)),match(indiv$PID, colnames(edu_dist))]
 bmi_dist <- bmi_dist[match(indiv$PID, rownames(bmi_dist)),match(indiv$PID, colnames(bmi_dist))]
-
 PV_dist <- PV_dist[match(indiv$PID, rownames(PV_dist)),match(indiv$PID, colnames(PV_dist))]
 AL_dist <- AL_dist[match(indiv$PID, rownames(AL_dist)),match(indiv$PID, colnames(AL_dist))]
 QM_dist <- QM_dist[match(indiv$PID, rownames(QM_dist)),match(indiv$PID, colnames(QM_dist))]
 DL_dist <- DL_dist[match(indiv$PID, rownames(DL_dist)),match(indiv$PID, colnames(DL_dist))]
 
-
+##check whether colnames do not match
 sum(colnames(A_Atrakt)!=colnames(A_Friends))
 sum(colnames(pol_dist)!=colnames(A_Friends))
 sum(colnames(phys_dist)!=colnames(A_Friends))
@@ -344,7 +347,6 @@ sum(colnames(age_dist)!=colnames(A_Friends))
 sum(colnames(wealth_dist)!=colnames(A_Friends))
 sum(colnames(edu_dist)!=colnames(A_Friends))
 sum(colnames(bmi_dist)!=colnames(A_Friends))
-
 sum(colnames(PV_dist)!=colnames(A_Friends))
 sum(colnames(AL_dist)!=colnames(A_Friends))
 sum(colnames(QM_dist)!=colnames(A_Friends))
