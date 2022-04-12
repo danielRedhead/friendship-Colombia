@@ -273,9 +273,12 @@ M[1,2] = -1 #discordant opinions: -1
 M[2,1] = -1 #discordant opinions: -1
 M[2,2] = 1  #both disagree: 1
 
-indiv$hh_wealth <- (indiv$hh_wealth + 20) #modify wealth variable to make it "loggable"
-
-min(indiv$hh_wealth[which(indiv$hh_wealth > 0)])
+#minimum non-zero value of the wealth variable
+min_wealth <- indiv %>% 
+  select(hh_wealth) %>%     #select wealth column
+  filter(hh_wealth > 0) %>% #filter strictly positive values
+  min()                     #get minimum among those
+indiv$hh_wealth <- (indiv$hh_wealth + min_wealth) #modify wealth variable to make it "loggable"
 
 # Distance matrix
 for( i in 1:N){
