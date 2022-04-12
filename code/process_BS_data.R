@@ -1,5 +1,5 @@
 # Set working directory
-setwd("~/Desktop/friendship paper")                                   # Augusto's working directory
+#setwd("~/Desktop/friendship paper")                                    # Augusto's working directory
 #setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main") # Cody's working directory
 
 # Load packages
@@ -122,8 +122,6 @@ unit_dyads <- merge(ul1[, c("su_dyad", "distance")],
 
 unit_dyads$distance <- 6000*(unit_dyads$distance / max(unit_dyads$distance, na.rm = TRUE))
 
-
-
 #################################################
 names <- unique(nl$Question) # question numbers
 el <- vector("list", length(names))
@@ -141,6 +139,7 @@ for(i in 1:6){
 
 elGive <- rbind(gel[[1]])
 
+# Give
 G <- as.matrix(elGive)
 G <- G[complete.cases(G), ]
 labels <- unique(c(G[, 1], G[, 2]))
@@ -149,6 +148,7 @@ rownames(A) <- colnames(A) <- labels
 A[G[, 1:2]] <- as.numeric(G[, 3])
 A_Give <- A
 
+# Attrakt
 G <- as.matrix(gel[[4]])
 G <- G[complete.cases(G), ]
 labels <- unique(c(G[, 1], G[, 2]))
@@ -156,11 +156,6 @@ A <- matrix(0, length(labels), length(labels))
 rownames(A) <- colnames(A) <- labels
 A[G[, 1:2]] <- G[, 3]
 A_Atrakt <- ifelse(A==0, 0,1)
-
-
-
-
-
 
 # Loan money
 elExchange <- rbind(el[[3]], el[[4]])
@@ -231,50 +226,55 @@ indiv$BMI[which(is.na(indiv$BMI))] <- median(indiv$BMI, na.rm=TRUE)
 # Impute missing values of categorical variables with "unknown"
 indiv <- indiv %>% mutate_at(vars(HHID, 3:4, 8:11), ~replace(., is.na(.), "UNKNOWN"))
 
-# Create compposite religiousness variable
+# Create composite religiousness variable
 indiv$RelPub <- ifelse(indiv$ReligionPublic == "AFEWTIMESPERWEEK" | indiv$ReligionPublic=="MORETHANONCEPERWEEK" | indiv$ReligionPublic == "ONCEPERWEEK", 1, 2) 
 indiv$RelPri <- ifelse(indiv$ReligionPrivate == "EVERYDAY" | indiv$ReligionPrivate == "MORETHANONCEPERDAY", 1, 2)
 indiv$GodIneq <- ifelse(indiv$GodInequality == "YES", 1, 2)
 
 # Specify political opinions 
+#opinions on peace vote
 indiv$PeaceVote[which(indiv$PeaceVote == "STRONGLYDISAGREE")] <- "DISAGREE"
 indiv$PeaceVote[which(indiv$PeaceVote == "STRONGLYAGREE")] <- "AGREE"
 indiv$PeaceVote[is.na(indiv$PeaceVote)] <- "DONTKNOW"
 
+#opinions on abortion
 indiv$AbortionLegal[which(indiv$AbortionLegal == "STRONGLYDISAGREE")] <- "DISAGREE"
 indiv$AbortionLegal[which(indiv$AbortionLegal == "STRONGLYAGREE")] <- "AGREE"
 indiv$AbortionLegal[is.na(indiv$AbortionLegal)] <- "DONTKNOW"
 
+#opinions on queer marriage
 indiv$QueerMarriageOK[which(indiv$QueerMarriageOK == "STRONGLYDISAGREE")] <- "DISAGREE"
 indiv$QueerMarriageOK[which(indiv$QueerMarriageOK == "STRONGLYAGREE")] <- "AGREE"
 indiv$QueerMarriageOK[is.na(indiv$QueerMarriageOK)] <- "DONTKNOW"
 
+#opinions on drugs legalization
 indiv$DrugsLegal[which(indiv$DrugsLegal == "STRONGLYDISAGREE")] <- "DISAGREE"
 indiv$DrugsLegal[which(indiv$DrugsLegal == "STRONGLYAGREE")] <- "AGREE"
 indiv$DrugsLegal[is.na(indiv$DrugsLegal)] <- "DONTKNOW"
 
-N = nrow(indiv)
-phys_dist = pol_dist <- matrix( NA, nrow = N, ncol = N)
+N <- nrow(indiv) #number of individuals
+phys_dist = pol_dist <- matrix( NA, nrow = N, ncol = N) #creates NxN matrices with NA as default cell value
 age_dist = wealth_dist <- matrix( NA, nrow = N, ncol = N)
 edu_dist = bmi_dist <- matrix( NA, nrow = N, ncol = N)
-R = c("AGREE","DISAGREE","DONTKNOW")
+R <- c("AGREE","DISAGREE","DONTKNOW") #political responses
 
+#create set of NxN empty matrices with N = individual IDs
 AL_dist <- QM_dist <- DL_dist <- PV_dist <-  matrix( NA, nrow = N, ncol = N)
 colnames(AL_dist) = colnames(QM_dist) = colnames(DL_dist) = colnames(PV_dist) = indiv$PID
 rownames(AL_dist) = rownames(QM_dist) = rownames(DL_dist) = rownames(PV_dist)  = indiv$PID
-
 colnames(edu_dist) = colnames(bmi_dist) = colnames(phys_dist) = colnames(pol_dist) = colnames(age_dist) = colnames(wealth_dist) = indiv$PID
 rownames(edu_dist) = rownames(bmi_dist) = rownames(phys_dist) = rownames(pol_dist) = rownames(age_dist) = rownames(wealth_dist) = indiv$PID
 
+# "Payoff" values for political opinions
 M = matrix(0, nrow=3, ncol=3)
-M[1,1] = 1
-M[1,2] = -1
+M[1,1] = 1  #both agree: 1
+M[1,2] = -1 #discordant opinions: -1
+M[2,1] = -1 #discordant opinions: -1
+M[2,2] = 1  #both disagree: 1
 
-M[2,1] = -1
-M[2,2] = 1
+indiv$hh_wealth <- (indiv$hh_wealth +20) #modify wealth variable to make it "loggable"
 
-indiv$hh_wealth <- (indiv$hh_wealth +20)
-
+# Distance matrix
 for( i in 1:N){
   for(j in 1:N){
   bob=c()
@@ -288,10 +288,10 @@ for( i in 1:N){
   wealth_dist[i,j] = abs(log(indiv$hh_wealth[i]) - log(indiv$hh_wealth[j]))
   bmi_dist[i,j] = abs(indiv$BMI[i] - indiv$BMI[j])
   edu_dist[i,j] = abs(indiv$EducationYears[i] - indiv$EducationYears[j])
-  
     }
 }
 
+# Normalize physical distance (proximity)
 phys_dist <- phys_dist/max(phys_dist, na.rm = TRUE)
 
 # Filter individual dataframe by the IDs present in the friendship matrix
@@ -313,12 +313,10 @@ all(rownames(A_Work) == rownames(A_Friends))
 all(rownames(A_Kin) == rownames(A_Friends))
 all(indiv$PID == rownames(A_Friends))
 
-
 pol_dist <- pol_dist[which(rownames(pol_dist) %in% indiv$PID), which(colnames(pol_dist) %in% indiv$PID)]
 phys_dist <- phys_dist[which(rownames(phys_dist) %in% indiv$PID), which(colnames(phys_dist) %in% indiv$PID)]
 age_dist <- age_dist[which(rownames(age_dist) %in% indiv$PID), which(colnames(age_dist) %in% indiv$PID)]
 wealth_dist <- wealth_dist[which(rownames(wealth_dist) %in% indiv$PID), which(colnames(wealth_dist) %in% indiv$PID)]
-
 
 pol_dist <- pol_dist[match(indiv$PID, rownames(pol_dist)),match(indiv$PID, colnames(pol_dist))]
 phys_dist <- phys_dist[match(indiv$PID, rownames(phys_dist)),match(indiv$PID, colnames(phys_dist))]
