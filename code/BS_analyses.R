@@ -42,9 +42,9 @@ pv_distance <- as.matrix(read.table("./data/BS_pv_distance.csv", sep = ",", row.
 dl_distance <- as.matrix(read.table("./data/BS_dl_distance.csv", sep = ",", row.names = 1, header = TRUE))
 al_distance <- as.matrix(read.table("./data/BS_al_distance.csv", sep = ",", row.names = 1, header = TRUE))
 qm_distance <- as.matrix(read.table("./data/BS_qm_distance.csv", sep = ",", row.names = 1, header = TRUE))
-
-
 att <- read.csv("./data/BS_individuals.csv", sep = ",")
+
+
 att <- att[att$PID %in% rownames(friends),]
 att$Sex[att$Sex == "F"] <- 1
 att$Sex[att$Sex == "M"] <- 0 
@@ -54,7 +54,9 @@ att$Religion[att$Religion == "SPIRITUAL"] <- "NONE"
 
 att$Ethnicity[att$Ethnicity == "AFROEMBERA"] <- "AFROCOLOMBIAN"
 
-N <- 93
+# Subset to individuals who played the RICH games
+N <- length(att$LeaveOther[!is.na(att$LeaveOther)])
+
 
 # Create the STRAND data object
 nets <- list( Friends = friends[1:N,1:N])

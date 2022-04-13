@@ -3,7 +3,7 @@
  setwd("/Users/") # Dan's directory
 
 database_path <- "danielredhead/Dropbox/Augusto/"
-output_path <- "danielredhead/friendship-Colombia/data/"
+output_path <- "danielredhead/friendship-Colombia/"
 
 # Load packages
 library(kinship2)
@@ -307,11 +307,11 @@ M[2,1] = -1 #discordant opinions: -1
 M[2,2] = 1  #both disagree: 1
 
 #minimum non-zero value of the wealth variable
-min_wealth <- indiv %>% 
-  select(hh_wealth) %>%     #select wealth column
-  filter(hh_wealth > 0) %>% #filter strictly positive values
-  min()                     #get minimum among those
-indiv$hh_wealth <- (indiv$hh_wealth + min_wealth) #modify wealth variable to make it "loggable"
+#min_wealth <- indiv %>% 
+#  select(hh_wealth) %>%     #select wealth column
+#  filter(hh_wealth > 0) %>% #filter strictly positive values
+#  min()                     #get minimum among those
+#indiv$hh_wealth <- (indiv$hh_wealth + min_wealth) #modify wealth variable to make it "loggable"
 
 # Distance matrix
 for( i in 1:N){
@@ -402,20 +402,20 @@ temp_df <- data.frame(PID = names(attractiveness_scores), A_S = attractiveness_s
 indiv <- left_join(indiv, temp_df, by = "PID") #merge with the indiv df based on personal IDs
 
 # Write out data
-write.csv(atrakt_dist, paste0(database_path, "data/SU_atrakt_dist.csv"))
-write.csv(A_Friends, paste0(database_path, "data/SU_friends.csv"))
-write.csv(A_Work, paste0(database_path, "data/SU_working.csv"))
-write.csv(A_Exchange, paste0(database_path, "data/SU_exchange.csv"))
-write.csv(A_Kin, paste0(database_path, "data/SU_kinship.csv"))
-write.csv(indiv, paste0(database_path, "data/SU_individuals.csv"))
-write.csv(pol_dist, paste0(database_path, "data/SU_political_distance.csv"))
-write.csv(A_Atrakt, paste0(database_path, "data/SU_attractiveness.csv"))
-write.csv(phys_dist, paste0(database_path, "data/SU_physical_distance.csv"))
-write.csv(age_dist, paste0(database_path, "data/SU_age_distance.csv"))
-write.csv(wealth_dist, paste0(database_path, "data/SU_wealth_distance.csv"))
-write.csv(edu_dist, paste0(database_path, "data/SU_edu_distance.csv"))
-write.csv(bmi_dist, paste0(database_path, "data/SU_bmi_distance.csv"))
-write.csv(PV_dist, paste0(database_path, "data/SU_pv_distance.csv"))
-write.csv(AL_dist, paste0(database_path, "data/SU_al_distance.csv"))
-write.csv(QM_dist, paste0(database_path, "data/SU_qm_distance.csv"))
-write.csv(DL_dist, paste0(database_path, "data/SU_dl_distance.csv"))
+write.csv(atrakt_dist, paste0(output_path, "data/SU_atrakt_dist.csv"))
+write.csv(A_Friends, paste0(output_path, "data/SU_friends.csv"))
+write.csv(A_Work, paste0(output_path, "data/SU_working.csv"))
+write.csv(A_Exchange, paste0(output_path, "data/SU_exchange.csv"))
+write.csv(A_Kin, paste0(output_path, "data/SU_kinship.csv"))
+write.csv(indiv, paste0(output_path, "data/SU_individuals.csv"))
+write.csv(pol_dist, paste0(output_path, "data/SU_political_distance.csv"))
+write.csv(A_Atrakt, paste0(output_path, "data/SU_attractiveness.csv"))
+write.csv(phys_dist, paste0(output_path, "data/SU_physical_distance.csv"))
+write.csv(age_dist, paste0(output_path, "data/SU_age_distance.csv"))
+write.csv(wealth_dist, paste0(output_path, "data/SU_wealth_distance.csv"))
+write.csv(edu_dist, paste0(output_path, "data/SU_edu_distance.csv"))
+write.csv(bmi_dist, paste0(output_path, "data/SU_bmi_distance.csv"))
+write.csv(PV_dist, paste0(output_path, "data/SU_pv_distance.csv"))
+write.csv(AL_dist, paste0(output_path, "data/SU_al_distance.csv"))
+write.csv(QM_dist, paste0(output_path, "data/SU_qm_distance.csv"))
+write.csv(DL_dist, paste0(output_path, "data/SU_dl_distance.csv"))
