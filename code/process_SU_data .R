@@ -94,6 +94,14 @@ su_r <- data.frame(su_dyad = names(su_r),
 #################################################
 
 #household proximity matrix
+set.seed(1)
+for(k in 1:length(su$X)){
+if(is.na(su$X[k])){
+  su$X[k] = runif(1, min(su$X, na.rm = TRUE), max(su$X, na.rm = TRUE))
+  su$Y[k] = runif(1, min(su$Y, na.rm = TRUE), max(su$Y, na.rm = TRUE))
+}
+}
+
 su_distance <- distm(cbind(su$X/50, su$Y/50))
 rownames(su_distance) = su$HHID
 colnames(su_distance) = su$HHID
