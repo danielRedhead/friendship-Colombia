@@ -1,6 +1,9 @@
 # Set working directory
-setwd("~/Desktop/friendship paper") # Augusto's directory
-# setwd("/Users/danielredhead/Dropbox/Augusto") # Dan's directory
+# setwd("~/Desktop/friendship paper") # Augusto's directory
+ setwd("/Users/") # Dan's directory
+
+database_path <- "danielredhead/Dropbox/Augusto/"
+output_path <- "danielredhead/friendship-Colombia/data/"
 
 # Load packages
 library(kinship2)
@@ -10,22 +13,22 @@ library(igraph)
 library(tidyverse)
 
 # Load data
-indiv <- read.csv("Data/PartnerChoice-Ross-Site4-Individual.csv",
+indiv <- read.csv(paste0(database_path,"Data/PartnerChoice-Ross-Site4-Individual.csv"),
                   header = TRUE,
                   as.is = TRUE)
 
-su <- read.csv("Data/PartnerChoice-Ross-Site4-Household.csv", 
+su <- read.csv(paste0(database_path,"Data/PartnerChoice-Ross-Site4-Household.csv"),
                header = TRUE, 
                as.is = TRUE)
 
-nl <- read.csv("Data/PartnerChoice-Ross-Site4-Networks.csv",
+nl <- read.csv(paste0(database_path,"Data/PartnerChoice-Ross-Site4-Networks.csv"),
                na = "", 
                header = TRUE,
                as.is = TRUE)
 
-kin <- read.csv("Data/PartnerChoice-Ross-Site4-Kinship.csv")
+kin <- read.csv(paste0(database_path,"Data/PartnerChoice-Ross-Site4-Kinship.csv"))
 
-gl <- read.csv(file = "Data/PartnerChoice-Ross-Site4-Games.csv",
+gl <- read.csv(file = paste0(database_path,"Data/PartnerChoice-Ross-Site4-Games.csv"),
                na = "",
                header = TRUE,
                as.is = TRUE)
@@ -212,12 +215,13 @@ rownames(A) <- colnames(A) <- labels
 A[G[ ,1:2]] <-  as.numeric(G[ ,3])
 A_Kin <- A
 
+indiv$Ethnicity_2 <- ifelse(indiv$LOBD == "VENEZUELA", "VENEZUELAN", "COLOMBIAN")
 #select relevant individual variables
 indiv <- select(indiv, PID, HHID, Sex, Ethnicity, Age, 
                 BMI, Grip, Religion, ReligionPublic,
                 ReligionPrivate, GodInequality,
                 EducationYears, PeaceVote, AbortionLegal, QueerMarriageOK, DrugsLegal,
-                GiveOther, LeaveOther, ReduceOther, ChildrenAlive
+                GiveOther, LeaveOther, ReduceOther, ChildrenAlive, Ethnicity_2
                 )
 
 # Add total household wealth to the indiv table
@@ -398,27 +402,20 @@ temp_df <- data.frame(PID = names(attractiveness_scores), A_S = attractiveness_s
 indiv <- left_join(indiv, temp_df, by = "PID") #merge with the indiv df based on personal IDs
 
 # Write out data
-write.csv(atrakt_dist, "data/SC_atrakt_dist.csv")
-write.csv(A_Friends, "data/SC_friends.csv")
-write.csv(A_Work, "data/SC_working.csv")
-write.csv(A_Exchange, "data/SC_exchange.csv")
-write.csv(A_Kin, "data/SC_kinship.csv")
-write.csv(indiv, "data/SC_individuals.csv")
-write.csv(pol_dist, "data/SC_political_distance.csv")
-write.csv(A_Atrakt, "data/SC_attractiveness.csv")
-write.csv(phys_dist, "data/SC_physical_distance.csv")
-write.csv(age_dist, "data/SC_age_distance.csv")
-write.csv(wealth_dist, "data/SC_wealth_distance.csv")
-write.csv(edu_dist, "data/SC_edu_distance.csv")
-write.csv(bmi_dist, "data/SC_bmi_distance.csv")
-write.csv(PV_dist, "data/SC_pv_distance.csv")
-write.csv(AL_dist, "data/SC_al_distance.csv")
-write.csv(QM_dist, "data/SC_qm_distance.csv")
-write.csv(DL_dist, "data/SC_dl_distance.csv")
-
-# Write out data
-#write.csv(A_Friends, "/Users/danielredhead/friendship-Colombia/data/SU_friends.csv")
-#write.csv(A_Work, "/Users/danielredhead/friendship-Colombia/data/SU_working.csv")
-#write.csv(A_Exchange, "/Users/danielredhead/friendship-Colombia/data/SU_exchange.csv")
-#write.csv(A_Kin, "/Users/danielredhead/friendship-Colombia/data/SU_kinship.csv")
-#write.csv(indiv, "/Users/danielredhead/friendship-Colombia/data/SU_individuals.csv")
+write.csv(atrakt_dist, paste0(database_path, "data/SU_atrakt_dist.csv"))
+write.csv(A_Friends, paste0(database_path, "data/SU_friends.csv"))
+write.csv(A_Work, paste0(database_path, "data/SU_working.csv"))
+write.csv(A_Exchange, paste0(database_path, "data/SU_exchange.csv"))
+write.csv(A_Kin, paste0(database_path, "data/SU_kinship.csv"))
+write.csv(indiv, paste0(database_path, "data/SU_individuals.csv"))
+write.csv(pol_dist, paste0(database_path, "data/SU_political_distance.csv"))
+write.csv(A_Atrakt, paste0(database_path, "data/SU_attractiveness.csv"))
+write.csv(phys_dist, paste0(database_path, "data/SU_physical_distance.csv"))
+write.csv(age_dist, paste0(database_path, "data/SU_age_distance.csv"))
+write.csv(wealth_dist, paste0(database_path, "data/SU_wealth_distance.csv"))
+write.csv(edu_dist, paste0(database_path, "data/SU_edu_distance.csv"))
+write.csv(bmi_dist, paste0(database_path, "data/SU_bmi_distance.csv"))
+write.csv(PV_dist, paste0(database_path, "data/SU_pv_distance.csv"))
+write.csv(AL_dist, paste0(database_path, "data/SU_al_distance.csv"))
+write.csv(QM_dist, paste0(database_path, "data/SU_qm_distance.csv"))
+write.csv(DL_dist, paste0(database_path, "data/SU_dl_distance.csv"))
