@@ -165,6 +165,8 @@ A[G[, 1:2]] <- G[, 3]
 A_Atrakt <- ifelse(A==0, 0,1)
 
 # Loan money
+el[[3]] <- as.data.frame(el[[3]][,c(2,1,3)])
+colnames(el[[3]]) <- c("PID", "AID", "Question")
 elExchange <- rbind(el[[3]], el[[4]])
 snExchange <- graph.data.frame(d = elExchange, directed = TRUE)
 
@@ -258,18 +260,40 @@ indiv$DrugsLegal[which(indiv$DrugsLegal == "STRONGLYDISAGREE")] <- "DISAGREE"
 indiv$DrugsLegal[which(indiv$DrugsLegal == "STRONGLYAGREE")] <- "AGREE"
 indiv$DrugsLegal[is.na(indiv$DrugsLegal)] <- "DONTKNOW"
 
+######## NEW CODE 
 N <- nrow(indiv) #number of individuals
-phys_dist <- pol_dist <- matrix( NA, nrow = N, ncol = N) #creates NxN matrices with NA as default cell value
-age_dist <- wealth_dist <- matrix( NA, nrow = N, ncol = N)
-edu_dist <- bmi_dist <- matrix( NA, nrow = N, ncol = N)
 R <- c("AGREE","DISAGREE","DONTKNOW") #political responses
+list_names <- c("AL_dist", "QM_dist", "DL_dist", "PV_dist", 
+                "phys_dist", "pol_dist", "age_dist", 
+                "wealth_dist", "edu_dist", "bmi_dist") #vector of names
+dist_list <- as.list(rep(NA, length(list_names)))           #create list with 4 elements
+names(dist_list) <- list_names                              #assign names to those elements
+for(i in 1:length(dist_list)){
+  dist_list[[i]] <- matrix(NA, nrow = N, ncol = N) #assign the empty elements of the list to the blank matrix
+  colnames(dist_list[[i]]) <-  indiv$PID  #assign the PID of individual df to colnames of all matrices           
+  rownames(dist_list[[i]]) <- indiv$PID   #same for rownames
+}
+list2env(dist_list, envir = .GlobalEnv) #export matrices from list to global environment
+
+########################################################################################
+########v################################################################################
+################################ OLD CODE ######## ######## ######## ######## ######## 
+######## ######## ######## ######## ######## ######## ######## ######## ######## ########
+#N <- nrow(indiv) #number of individuals
+#phys_dist <- pol_dist <- matrix( NA, nrow = N, ncol = N) #creates NxN matrices with NA as default cell value
+#age_dist <- wealth_dist <- matrix( NA, nrow = N, ncol = N)
+#edu_dist <- bmi_dist <- matrix( NA, nrow = N, ncol = N)
+#R <- c("AGREE","DISAGREE","DONTKNOW") #political responses
 
 #create set of NxN empty matrices with N = individual IDs
-AL_dist <- QM_dist <- DL_dist <- PV_dist <-  matrix( NA, nrow = N, ncol = N)
-colnames(AL_dist) = colnames(QM_dist) = colnames(DL_dist) = colnames(PV_dist) = indiv$PID
-rownames(AL_dist) = rownames(QM_dist) = rownames(DL_dist) = rownames(PV_dist)  = indiv$PID
-colnames(edu_dist) = colnames(bmi_dist) = colnames(phys_dist) = colnames(pol_dist) = colnames(age_dist) = colnames(wealth_dist) = indiv$PID
-rownames(edu_dist) = rownames(bmi_dist) = rownames(phys_dist) = rownames(pol_dist) = rownames(age_dist) = rownames(wealth_dist) = indiv$PID
+#AL_dist <- QM_dist <- DL_dist <- PV_dist <-  matrix( NA, nrow = N, ncol = N)
+#colnames(AL_dist) = colnames(QM_dist) = colnames(DL_dist) = colnames(PV_dist) = indiv$PID
+#rownames(AL_dist) = rownames(QM_dist) = rownames(DL_dist) = rownames(PV_dist)  = indiv$PID
+#colnames(edu_dist) = colnames(bmi_dist) = colnames(phys_dist) = colnames(pol_dist) = colnames(age_dist) = colnames(wealth_dist) = indiv$PID
+#rownames(edu_dist) = rownames(bmi_dist) = rownames(phys_dist) = rownames(pol_dist) = rownames(age_dist) = rownames(wealth_dist) = indiv$PID
+######## ######## ######## ######## ######## ######## ######## ########
+######## ######## ######## ######## ######## ######## ######## ########
+######## ######## ######## ######## ######## ########
 
 # "Payoff" values for political opinions
 M = matrix(0, nrow=3, ncol=3)
