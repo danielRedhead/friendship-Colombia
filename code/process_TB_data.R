@@ -1,6 +1,14 @@
 # Set working directory
-setwd("~/Desktop/friendship paper") # Augusto's directory
-# setwd("/Users/danielredhead/Dropbox/Augusto") # Dan's directory
+
+# Dan's path
+setwd("/Users/") # Dan's directory
+database_path <- "danielredhead/Dropbox/Augusto/"  
+output_path <- "danielredhead/friendship-Colombia/"
+
+# Augusto's path
+#setwd("~/Desktop") 
+#database_path <- "friendship paper/" 
+#output_path <- "friendship paper/"
 
 # Load packages
 library(kinship2)
@@ -10,22 +18,22 @@ library(igraph)
 library(tidyverse)
 
 # Load data
-indiv <- read.csv("Data/PartnerChoice-Ross-Site3-Individual.csv",
+indiv <- read.csv(paste0(database_path, "Data/PartnerChoice-Ross-Site3-Individual.csv"),
                   header = TRUE,
                   as.is = TRUE)
 
-su <- read.csv("Data/PartnerChoice-Ross-Site3-Household.csv", 
+su <- read.csv(paste0(database_path, "Data/PartnerChoice-Ross-Site3-Household.csv"), 
                header = TRUE, 
                as.is = TRUE)
 
-nl <- read.csv("Data/PartnerChoice-Ross-Site3-Networks.csv",
+nl <- read.csv(paste0(database_path, "Data/PartnerChoice-Ross-Site3-Networks.csv"),
                na = "", 
                header = TRUE,
                as.is = TRUE)
 
-kin <- read.csv("Data/PartnerChoice-Ross-Site3-Kinship.csv")
+kin <- read.csv(paste0(database_path, "Data/PartnerChoice-Ross-Site3-Kinship.csv"))
 
-gl <- read.csv(file = "Data/PartnerChoice-Ross-Site3-Games.csv",
+gl <- read.csv(file = paste0(database_path, "Data/PartnerChoice-Ross-Site3-Games.csv"),
                na = "",
                header = TRUE,
                as.is = TRUE)
@@ -393,28 +401,22 @@ temp_df <- data.frame(PID = names(attractiveness_scores), A_S = attractiveness_s
 indiv <- left_join(indiv, temp_df, by = "PID") #merge with the indiv df based on personal IDs
 
 # Write out data
-write.csv(atrakt_dist, "data/TB_atrakt_dist.csv")
-write.csv(A_Friends, "data/TB_friends.csv")
-write.csv(A_Work, "data/TB_working.csv")
-write.csv(A_Exchange, "data/TB_exchange.csv")
-write.csv(A_Kin, "data/TB_kinship.csv")
-write.csv(indiv, "data/TB_individuals.csv")
-write.csv(pol_dist, "data/TB_political_distance.csv")
-write.csv(A_Atrakt, "data/TB_attractiveness.csv")
-write.csv(phys_dist, "data/TB_physical_distance.csv")
-write.csv(age_dist, "data/TB_age_distance.csv")
-write.csv(wealth_dist, "data/TB_wealth_distance.csv")
-write.csv(edu_dist, "data/TB_edu_distance.csv")
-write.csv(bmi_dist, "data/TB_bmi_distance.csv")
-write.csv(PV_dist, "data/TB_pv_distance.csv")
-write.csv(AL_dist, "data/TB_al_distance.csv")
-write.csv(QM_dist, "data/TB_qm_distance.csv")
-write.csv(DL_dist, "data/TB_dl_distance.csv")
+write.csv(atrakt_dist, paste0(output_path, "data/TB_atrakt_dist.csv"))
+write.csv(A_Friends, paste0(output_path, "data/TB_friends.csv"))
+write.csv(A_Work, paste0(output_path, "data/TB_working.csv"))
+write.csv(A_Exchange, paste0(output_path, "data/TB_exchange.csv"))
+write.csv(A_Kin, paste0(output_path, "data/TB_kinship.csv"))
+write.csv(indiv, paste0(output_path, "data/TB_individuals.csv"))
+write.csv(pol_dist, paste0(output_path, "data/TB_political_distance.csv"))
+write.csv(A_Atrakt, paste0(output_path, "data/TB_attractiveness.csv"))
+write.csv(phys_dist, paste0(output_path, "data/TB_physical_distance.csv"))
+write.csv(age_dist, paste0(output_path, "data/TB_age_distance.csv"))
+write.csv(wealth_dist, paste0(output_path, "data/TB_wealth_distance.csv"))
+write.csv(edu_dist, paste0(output_path, "data/TB_edu_distance.csv"))
+write.csv(bmi_dist, paste0(output_path, "data/TB_bmi_distance.csv"))
+write.csv(PV_dist, paste0(output_path, "data/TB_pv_distance.csv"))
+write.csv(AL_dist, paste0(output_path, "data/TB_al_distance.csv"))
+write.csv(QM_dist, paste0(output_path, "data/TB_qm_distance.csv"))
+write.csv(DL_dist, paste0(output_path, "data/TB_dl_distance.csv"))
 
-# Write out data
-#write.csv(A_Friends, "/Users/danielredhead/friendship-Colombia/data/TB_friends.csv")
-#write.csv(A_Work, "/Users/danielredhead/friendship-Colombia/data/TB_working.csv")
-#write.csv(A_Exchange, "/Users/danielredhead/friendship-Colombia/data/TB_exchange.csv")
-#write.csv(A_Kin, "/Users/danielredhead/friendship-Colombia/data/TB_kinship.csv")
-#write.csv(indiv, "/Users/danielredhead/friendship-Colombia/data/TB_individuals.csv")
 
