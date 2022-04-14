@@ -66,6 +66,8 @@ N <- length(att$LeaveOther[!is.na(att$LeaveOther)])
 # Create the STRAND data object
 nets <- list( Friends = friends[1:N,1:N])
 
+sharing2 <- ifelse( (sharing + t(sharing)) > 0, 1, 0) #line to be added to all scripts
+
 dyad <- list( Relatedness = relatedness[1:N,1:N], 
               Sharing = sharing[1:N,1:N], 
               Polit_dist = pol_distance[1:N,1:N], 
