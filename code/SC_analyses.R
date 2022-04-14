@@ -11,8 +11,8 @@ rm(list = ls())
 # Set the working directory
 # You will need to specify the correct file path for your computer
 #setwd("/Users/danielredhead/friendship-Colombia")
-#setwd("./friendship-colombia")       # working directory for apple
-setwd("~/Desktop/friendship paper")                                   # Augusto's working directory
+setwd("./friendship-colombia")       # working directory for apple
+#setwd("~/Desktop/friendship paper")                                   # Augusto's working directory
 
 # Load function
 normalize <- function(y) {

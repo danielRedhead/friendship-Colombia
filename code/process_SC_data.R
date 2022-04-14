@@ -1,6 +1,11 @@
 # Set working directory
-setwd("~/Desktop/friendship paper") # Augusto's directory
-# setwd("/Users/danielredhead/Dropbox/Augusto") # Dan's directory
+setwd("/Users/") # Dan's directory
+
+database_path <- "danielredhead/Dropbox/Augusto/"  # Dan's path
+output_path <- "danielredhead/friendship-Colombia/"
+
+#database_path <- "friendship paper/" # Augusto's path
+#output_path <- "friendship paper/"
 
 # Load packages
 library(kinship2)
@@ -10,22 +15,22 @@ library(igraph)
 library(tidyverse)
 
 # Load data
-indiv <- read.csv("Data/PartnerChoice-Ross-Site2-Individual.csv",
+indiv <- read.csv(paste0(database_path,"Data/PartnerChoice-Ross-Site2-Individual.csv"),
                   header = TRUE,
                   as.is = TRUE)
 
-su <- read.csv("Data/PartnerChoice-Ross-Site2-Household.csv", 
+su <- read.csv(paste0(database_path,"Data/PartnerChoice-Ross-Site2-Household.csv"), 
                header = TRUE, 
                as.is = TRUE)
 
-nl <- read.csv("Data/PartnerChoice-Ross-Site2-Networks.csv",
+nl <- read.csv(paste0(database_path,"Data/PartnerChoice-Ross-Site2-Networks.csv"),
                na = "", 
                header = TRUE,
                as.is = TRUE)
 
-kin <- read.csv("Data/PartnerChoice-Ross-Site2-Kinship.csv")
+kin <- read.csv(paste0(database_path,"Data/PartnerChoice-Ross-Site2-Kinship.csv"))
 
-gl <- read.csv(file = "Data/PartnerChoice-Ross-Site2-Games.csv",
+gl <- read.csv(file = paste0(database_path,"Data/PartnerChoice-Ross-Site2-Games.csv"),
                na = "",
                header = TRUE,
                as.is = TRUE)
@@ -404,34 +409,21 @@ colnames(atrakt_dist) = rownames(atrakt_dist) = colnames(A_Atrakt)
 temp_df <- data.frame(PID = names(attractiveness_scores), A_S = attractiveness_scores) #make attractiveness vector into a temporary df
 indiv <- left_join(indiv, temp_df, by = "PID") #merge with the indiv df based on personal IDs
 
-# Write out data (Dan's repo)
-#write.csv(A_Friends, "/Users/danielredhead/friendship-Colombia/data/SC_friends.csv")
-#write.csv(A_Work, "/Users/danielredhead/friendship-Colombia/data/SC_working.csv")
-#write.csv(A_Exchange, "/Users/danielredhead/friendship-Colombia/data/SC_exchange.csv")
-#write.csv(A_Kin, "/Users/danielredhead/friendship-Colombia/data/SC_kinship.csv")
-#write.csv(indiv, "/Users/danielredhead/friendship-Colombia/data/SC_individuals.csv")
-
 # Write out data
-write.csv(atrakt_dist, "data/SC_atrakt_dist.csv")
-write.csv(A_Friends, "data/SC_friends.csv")
-write.csv(A_Work, "data/SC_working.csv")
-write.csv(A_Exchange, "data/SC_exchange.csv")
-write.csv(A_Kin, "data/SC_kinship.csv")
-write.csv(indiv, "data/SC_individuals.csv")
-write.csv(pol_dist, "data/SC_political_distance.csv")
-write.csv(A_Atrakt, "data/SC_attractiveness.csv")
-write.csv(phys_dist, "data/SC_physical_distance.csv")
-write.csv(age_dist, "data/SC_age_distance.csv")
-write.csv(wealth_dist, "data/SC_wealth_distance.csv")
-write.csv(edu_dist, "data/SC_edu_distance.csv")
-write.csv(bmi_dist, "data/SC_bmi_distance.csv")
-write.csv(PV_dist, "data/SC_pv_distance.csv")
-write.csv(AL_dist, "data/SC_al_distance.csv")
-write.csv(QM_dist, "data/SC_qm_distance.csv")
-write.csv(DL_dist, "data/SC_dl_distance.csv")
-
-#write.csv(A_Friends, "~/Desktop/friendship_project/SC_friends.csv")
-#write.csv(A_Work, "~/Desktop/friendship_project/SC_working.csv")
-#write.csv(A_Exchange, "~/Desktop/friendship_project/SC_exchange.csv")
-#write.csv(A_Kin, "~/Desktop/friendship_project/SC_kinship.csv")
-#write.csv(indiv, "~/Desktop/friendship_project/SC_individuals.csv")
+write.csv(atrakt_dist, paste0(output_path,"data/SC_atrakt_dist.csv"))
+write.csv(A_Friends, paste0(output_path,"data/SC_friends.csv"))
+write.csv(A_Work, paste0(output_path,"data/SC_working.csv"))
+write.csv(A_Exchange, paste0(output_path,"data/SC_exchange.csv"))
+write.csv(A_Kin, paste0(output_path,"data/SC_kinship.csv"))
+write.csv(indiv, paste0(output_path,"data/SC_individuals.csv"))
+write.csv(pol_dist, paste0(output_path,"data/SC_political_distance.csv"))
+write.csv(A_Atrakt, paste0(output_path,"data/SC_attractiveness.csv"))
+write.csv(phys_dist, paste0(output_path,"data/SC_physical_distance.csv"))
+write.csv(age_dist, paste0(output_path,"data/SC_age_distance.csv"))
+write.csv(wealth_dist, paste0(output_path,"data/SC_wealth_distance.csv"))
+write.csv(edu_dist, paste0(output_path,"data/SC_edu_distance.csv"))
+write.csv(bmi_dist, paste0(output_path,"data/SC_bmi_distance.csv"))
+write.csv(PV_dist, paste0(output_path,"data/SC_pv_distance.csv"))
+write.csv(AL_dist, paste0(output_path,"data/SC_al_distance.csv"))
+write.csv(QM_dist, paste0(output_path,"data/SC_qm_distance.csv"))
+write.csv(DL_dist, paste0(output_path,"data/SC_dl_distance.csv"))
