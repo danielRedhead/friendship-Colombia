@@ -226,7 +226,7 @@ rownames(A) <- colnames(A) <- labels
 A[G[ ,1:2]] <-  as.numeric(G[ ,3])
 A_Kin <- A
 
-indiv$Ethnicity_2 <- ifelse(indiv$LOBD == "VENEZUELA", "VENEZUELAN", "COLOMBIAN")
+indiv$Ethnicity_2 <- ifelse(indiv$LOBD == "VENEZUELA", "VENEZUELAN", "COLOMBIAN") #site-specific coding for ethnicity
 #select relevant individual variables
 indiv <- select(indiv, PID, HHID, Sex, Ethnicity, Age, 
                 BMI, Grip, Religion, ReligionPublic,
