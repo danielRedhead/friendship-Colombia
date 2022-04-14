@@ -50,7 +50,7 @@ att$Sex[att$Sex == "M"] <- 0
 att$Sex <- as.numeric(att$Sex)
 
 att$Ethnicity_2[is.na(att$Ethnicity_2)] <- "COLOMBIAN"
-
+att$Grip[which(att$Grip == "UNKNOWN")] <- 0
 
 att$Religion[att$Religion %in% c("CHRISTIAN", "JEHOVAHS WITNESS")] <- "OTHER"
 att$Religion[att$Religion %in% c("SPIRITUAL", "UNKNOWN")] <- "NONE"
@@ -81,8 +81,9 @@ group_ids <- data.frame(Ethnicity = as.factor(att$Ethnicity_2[1:N]),
                         Religion = as.factor(att$Religion[1:N]))
 
 indiv <-  data.frame(Age = center(att$Age[1:N]), 
+                     Grip = att$Grip[1:N],
                      BMI = center(att$BMI[1:N]),  
-                     Wealth = center(log(att$hh_wealth[1:N])),
+                     Wealth = center(log(att$hh_wealth[1:N]+20)),
                      Give = center(att$GiveOther[1:N]),
                      Leave = center(att$LeaveOther[1:N]),
                      Punish = center(att$ReduceOther[1:N]),
