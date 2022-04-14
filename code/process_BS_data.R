@@ -1,15 +1,15 @@
 # Set working directory
 #setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main") # Cody's working directory
-setwd("~/Desktop/") # Augusto's directory
-# setwd("/Users/") # Dan's directory
+#setwd("~/Desktop/") # Augusto's directory
+ setwd("/Users/") # Dan's directory
 
 # Dan's path
-#database_path <- "danielredhead/Dropbox/Augusto/"  
-#output_path <- "danielredhead/friendship-Colombia/"
+database_path <- "danielredhead/Dropbox/Augusto/"  
+output_path <- "danielredhead/friendship-Colombia/"
 
 # Augusto's path
-database_path <- "friendship paper/" 
-output_path <- "friendship paper/"
+#database_path <- "friendship paper/" 
+#output_path <- "friendship paper/"
 
 # Load packages
 library(kinship2)

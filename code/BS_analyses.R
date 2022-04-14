@@ -13,6 +13,7 @@ rm(list = ls())
 #setwd("/Users/danielredhead/friendship-Colombia")                     # Dan's working directory
 #setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main") # Cody's working directory
 #setwd("~/Desktop/friendship paper")                                   # Augusto's working directory
+setwd("./friendship-colombia")
 
 # Load function
 normalize <- function(y) {
@@ -43,7 +44,6 @@ dl_distance <- as.matrix(read.table("./data/BS_dl_distance.csv", sep = ",", row.
 al_distance <- as.matrix(read.table("./data/BS_al_distance.csv", sep = ",", row.names = 1, header = TRUE))
 qm_distance <- as.matrix(read.table("./data/BS_qm_distance.csv", sep = ",", row.names = 1, header = TRUE))
 att <- read.csv("./data/BS_individuals.csv", sep = ",")
-
 
 att <- att[att$PID %in% rownames(friends),]
 att$Sex[att$Sex == "F"] <- 1
@@ -83,7 +83,7 @@ group_ids <- data.frame(Ethnicity = as.factor(att$Ethnicity[1:N]),
 indiv <-  data.frame(Age = center(att$Age[1:N]), 
                      Grip = center(att$Grip[1:N]),
                      BMI = center(att$BMI[1:N]),  
-				     Wealth = center(log(att$hh_wealth[1:N]+20)),
+				             Wealth = center(log(att$hh_wealth[1:N]+20)),
                      Give = center(att$GiveOther[1:N]),
                      Leave = center(att$LeaveOther[1:N]),
                      Punish = center(att$ReduceOther[1:N]),
