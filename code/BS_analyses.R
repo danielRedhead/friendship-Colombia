@@ -13,7 +13,7 @@ rm(list = ls())
 #setwd("/Users/danielredhead/friendship-Colombia")                     # Dan's working directory
 #setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main") # Cody's working directory
 #setwd("~/Desktop/friendship paper")                                   # Augusto's working directory
-setwd("./friendship-colombia")
+setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main")       # working directory for apple
 
 # Load function
 normalize <- function(y) {
@@ -63,7 +63,7 @@ nets <- list( Friends = friends[1:N,1:N])
 sharing2 <- ifelse( (sharing + t(sharing)) > 0, 1, 0) #line to be added to all scripts
 
 dyad <- list( Relatedness = relatedness[1:N,1:N], 
-              Sharing = sharing[1:N,1:N], 
+              Sharing = sharing2[1:N,1:N], 
               Polit_dist = pol_distance[1:N,1:N], 
               Phys_dist = distance[1:N,1:N],
               Age_dist = age_distance[1:N,1:N], 
@@ -98,7 +98,7 @@ model_dat <- make_strand_data(self_report = nets,
                               dyadic_covariates = dyad)
 
 #model
-fit <- fit_block_plus_social_relations_model( data=model_dat,
+fit_BS <- fit_block_plus_social_relations_model( data=model_dat,
       block_regression = ~ Sex + Religion + Ethnicity,
       focal_regression = ~ 1,
       target_regression = ~ Give + Leave + Punish + Attractiveness + RS +  Grip + Wealth + Age + Edu + BMI,
@@ -109,10 +109,10 @@ fit <- fit_block_plus_social_relations_model( data=model_dat,
      max_treedepth = NULL, adapt_delta = .98)
        )
 
-res <- summarize_strand_results(fit)
+res_BS <- summarize_strand_results(fit_BS)
 
 #plotting results
-strand_caterpillar_plot = function(results, submodels=NULL, normalized=FALSE, only_slopes=TRUE, only_technicals=FALSE){
+strand_caterpillar_plot = function(results, submodels=NULL, normalized=FALSE, only_slopes=TRUE, only_technicals=FALSE, site="BOB"){
   dat = vector("list",length(results$summary_list))
 
   for(k in 1:length(results$summary_list)){
@@ -195,6 +195,7 @@ if(normalized==TRUE) {
   df$HI =  df$HI/df$Diff
 }
  
+ df$Site = site
 
 p <- ggplot(df,aes(x=Variable,y=Median,ymin=LI,ymax=HI))+ 
      geom_linerange(size=1)+
@@ -219,8 +220,13 @@ p2 <- ggplot(df,aes(x=Variable,y=Median,ymin=LI,ymax=HI))+
 
 if(only_technicals==TRUE){
  return(p2)} else{
-    return(p)
+    return(df)
  }
  }
 
-  vis1 = strand_caterpillar_plot(res, submodel=c("Focal efffects: Out-degree","Target effects: In-degree","Dyadic effects","Other estimates"), normalized=TRUE)
+  df_BS = strand_caterpillar_plot(res_BS, submodel=c("Focal efffects: Out-degree","Target effects: In-degree","Dyadic effects","Other estimates"), normalized=FALSE, site="BS")
+ save(df_BS, file="df_BS.RData")
+
+  df_BSs = strand_caterpillar_plot(res_BS, submodel=c("Focal efffects: Out-degree","Target effects: In-degree","Dyadic effects","Other estimates"), normalized=TRUE, site="BS")
+ save(df_BSs, file="df_BSs.RData")
+

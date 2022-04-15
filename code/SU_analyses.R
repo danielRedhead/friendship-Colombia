@@ -11,7 +11,7 @@ rm(list = ls())
 # Set the working directory
 # You will need to specify the correct file path for your computer
 #setwd("/Users/danielredhead/friendship-Colombia")
-setwd("./friendship-colombia")       # working directory for apple
+setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main") 
 
 # Load function
 normalize <- function(y) {
@@ -51,6 +51,7 @@ att$Sex <- as.numeric(att$Sex)
 
 att$Ethnicity_2[is.na(att$Ethnicity_2)] <- "COLOMBIAN"
 att$Grip[which(att$Grip == "UNKNOWN")] <- 0
+att$Grip = as.numeric(att$Grip)
 
 att$Religion[att$Religion %in% c("CHRISTIAN", "JEHOVAHS WITNESS")] <- "OTHER"
 att$Religion[att$Religion %in% c("SPIRITUAL", "UNKNOWN")] <- "NONE"
@@ -64,7 +65,7 @@ nets <- list( Friends = friends[1:N,1:N])
 sharing2 <- ifelse( (sharing + t(sharing)) > 0, 1, 0) #line to be added to all scripts
 
 dyad <- list( Relatedness = relatedness[1:N,1:N], 
-              Sharing = sharing[1:N,1:N], 
+              Sharing = sharing2[1:N,1:N], 
               Polit_dist = pol_distance[1:N,1:N], 
               Phys_dist = distance[1:N,1:N],
               Age_dist = age_distance[1:N,1:N], 
@@ -100,7 +101,7 @@ model_dat <- make_strand_data(self_report = nets,
                               individual_covariates = indiv, 
                               dyadic_covariates = dyad)
 
-fit <- fit_block_plus_social_relations_model( data=model_dat,
+fit_SU <- fit_block_plus_social_relations_model( data=model_dat,
       block_regression = ~ Sex + Religion + Ethnicity,
       focal_regression = ~ 1,
       target_regression = ~ Give + Leave + Punish + Attractiveness + RS +  Grip + Wealth + Age + Edu + BMI,
@@ -112,9 +113,126 @@ fit <- fit_block_plus_social_relations_model( data=model_dat,
        )
 
 
-res <- summarize_strand_results(fit)
+res_SU <- summarize_strand_results(fit_SU)
 
-for( i in 1:length(dyad)) {
-  which(is.na(dyad[[4]]),arr.ind=TRUE)
+
+
+#plotting results
+strand_caterpillar_plot = function(results, submodels=NULL, normalized=FALSE, only_slopes=TRUE, only_technicals=FALSE, site="BOB"){
+  dat = vector("list",length(results$summary_list))
+
+  for(k in 1:length(results$summary_list)){
+   dat[[k]] = data.frame(results$summary_list[[k]])
+   dat[[k]]$SubModel = names(results$summary_list)[k]
+   colnames(dat[[k]]) = c("Variable", "Median", "LI", "HI", "Mean","SD", "SubModel")
+   for(j in 2:6)
+   dat[[k]][,j] = as.numeric(dat[[k]][,j])
+  }
+
+
+df = do.call(rbind, dat)
+
+colnames(df) = c("Variable", "Median", "LI", "HI", "Mean","SD", "SubModel")
+
+
+df$Submodel = factor(df$SubModel)
+df$Submodel = factor(df$SubModel, levels=c("False positive rate", "Recall of true ties","Theta: question-order effects",
+                                           "Focal efffects: Out-degree","Target effects: In-degree","Dyadic effects", "Other estimates" ))
+
+if(only_slopes==TRUE){
+exclude=c("false positive rate intercept, layer 1",               
+"false positive rate intercept, layer 2",               
+"false positive rate sd, layer 1",                     
+"false positive rate sd, layer 2",                            
+"recall rate of true ties intercept, layer 1",          
+"recall rate of true ties intercept, layer 2",          
+"recall rate of true ties sd, layer 1",                 
+"recall rate of true ties sd, layer 2",                 
+"theta intercept, layer 1 to 2",                        
+"theta sd, layer 1 to 2",                               
+"focal effects sd",                                            
+"target effects sd",                                            
+"dyadic effects sd",                                                         
+"focal-target effects rho (generalized recipocity)",    
+"dyadic effects rho (dyadic recipocity)")   
+
+df = df[which(!df$Variable %in% exclude),]
 }
+
+if(only_technicals==TRUE){
+include=c("false positive rate intercept, layer 1",               
+"false positive rate intercept, layer 2",               
+"false positive rate sd, layer 1",                     
+"false positive rate sd, layer 2",                            
+"recall rate of true ties intercept, layer 1",          
+"recall rate of true ties intercept, layer 2",          
+"recall rate of true ties sd, layer 1",                 
+"recall rate of true ties sd, layer 2",                 
+"theta intercept, layer 1 to 2",                        
+"theta sd, layer 1 to 2",                               
+"focal effects sd",                                            
+"target effects sd",                                            
+"dyadic effects sd",                                                         
+"focal-target effects rho (generalized recipocity)",    
+"dyadic effects rho (dyadic recipocity)")   
+
+unit=c("false positive rate intercept, layer 1",               
+"false positive rate intercept, layer 2",                                  
+"recall rate of true ties intercept, layer 1",          
+"recall rate of true ties intercept, layer 2",                          
+"theta intercept, layer 1 to 2",                                                                                                             
+"focal-target effects rho (generalized recipocity)",    
+"dyadic effects rho (dyadic recipocity)")
+
+df = df[which(df$Variable %in% include),]
+
+df$Scaling = ifelse(df$Variable %in% unit, "Rates", "Dispersion")
+}
+
+
+if(!is.null(submodels))
+df = df[which(df$SubModel %in% submodels),]
+
+df$Diff = df$HI-df$LI   
+
+if(normalized==TRUE) {
+  df$Median = df$Median/df$Diff
+  df$LI = df$LI/df$Diff
+  df$HI =  df$HI/df$Diff
+}
+ 
+ df$Site = site
+
+p <- ggplot(df,aes(x=Variable,y=Median,ymin=LI,ymax=HI))+ 
+     geom_linerange(size=1)+
+     geom_point(size=2)+
+     facet_grid( SubModel~., scales = "free", space='free')+
+       #facet_wrap(vars(SubModel), ncol=1,scales = "free")+
+       geom_hline(aes(yintercept=0),color="black",linetype="dashed")+
+     labs(y="Regression parameters", x="") + theme(strip.text.x = element_text(size=12,face="bold"), 
+     strip.text.y = element_text(size=12,face="bold"),axis.text=element_text(size=12),axis.title.y=element_text(size=14,
+     face="bold"), axis.title.x=element_blank())+theme(strip.text.y = element_text(angle = 360)) + coord_flip() + theme(panel.spacing = unit(1, "lines")) 
+
+p2 <- ggplot(df,aes(x=Variable,y=Median,ymin=LI,ymax=HI))+ 
+     geom_linerange(size=1)+
+     geom_point(size=2)+
+     facet_grid( SubModel~Scaling, scales = "free")+
+       #facet_wrap(vars(SubModel), ncol=1,scales = "free")+
+       geom_hline(aes(yintercept=0),color="black",linetype="dashed")+
+     labs(y="Regression parameters", x="") + theme(strip.text.x = element_text(size=8,face="bold"), 
+     strip.text.y = element_text(size=8,face="bold"),axis.text=element_text(size=8),axis.title.y=element_text(size=14,
+     face="bold"), axis.title.x=element_blank())+theme(strip.text.y = element_text(angle = 360)) + coord_flip() + theme(panel.spacing = unit(1, "lines")) 
+
+
+if(only_technicals==TRUE){
+ return(p2)} else{
+    return(df)
+ }
+ }
+
+  df_SU = strand_caterpillar_plot(res_SU, submodel=c("Focal efffects: Out-degree","Target effects: In-degree","Dyadic effects","Other estimates"), normalized=FALSE, site="SU")
+ save(df_SU, file="df_SU.RData")
+
+   df_SUs = strand_caterpillar_plot(res_SU, submodel=c("Focal efffects: Out-degree","Target effects: In-degree","Dyadic effects","Other estimates"), normalized=TRUE, site="SU")
+ save(df_SUs, file="df_SUs.RData")
 
