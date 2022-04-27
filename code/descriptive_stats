@@ -8,17 +8,13 @@ library(reshape2)
 #setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main") # Cody's working directory
 #setwd("~/Desktop/friendship paper")                                   # Augusto's working directory
 
-#load data
 site_code <- c("BS", "SC", "TB", "SU") #codes for the sites
-site_csv <- rep(NA, length(site_code)) #empty vector for file location
-for(i in 1:length(site_code)){
-  site_csv[i] <- paste0("./data/", site_code[i], "_friends.csv") #generate file locations
-  }
-#import
-BS_friendship <- read.table(site_csv[1], sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
-SC_friendship <- read.table(site_csv[2], sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
-TB_friendship <- read.table(site_csv[3], sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
-SU_friendship <- read.table(site_csv[4], sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
+
+#load data
+BS_friendship <- read.table("./data/BS_friends.csv", sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
+SC_friendship <- read.table("./data/SC_friends.csv", sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
+TB_friendship <- read.table("./data/TB_friends.csv", sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
+SU_friendship <- read.table("./data/SU_friends.csv", sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
 
 #############################################################################
 #create a set of vectors to use in the loop
