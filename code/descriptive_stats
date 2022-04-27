@@ -2,8 +2,11 @@ library(igraph)
 library(tidyverse)
 library(reshape2)
 
-#working directory
-#setwd("~/Desktop/friendship paper") #Augusto's directory
+# Set the working directory
+# You will need to specify the correct file path for your computer
+#setwd("/Users/danielredhead/friendship-Colombia")                     # Dan's working directory
+#setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main") # Cody's working directory
+#setwd("~/Desktop/friendship paper")                                   # Augusto's working directory
 
 #load data
 site_code <- c("BS", "SC", "TB", "SU") #codes for the sites
