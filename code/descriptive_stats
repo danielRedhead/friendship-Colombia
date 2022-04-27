@@ -2,19 +2,26 @@ library(igraph)
 library(tidyverse)
 library(reshape2)
 
-# Set the working directory
-# You will need to specify the correct file path for your computer
-#setwd("/Users/danielredhead/friendship-Colombia")                     # Dan's working directory
+# Set working directory
 #setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main") # Cody's working directory
-#setwd("~/Desktop/friendship paper")                                   # Augusto's working directory
+#setwd("~/Desktop/") # Augusto's directory
+# setwd("/Users/") # Dan's directory
+
+# Dan's path
+#database_path <- "danielredhead/Dropbox/Augusto/"  
+#output_path <- "danielredhead/friendship-Colombia/"
+
+# Augusto's path
+#database_path <- "friendship paper/" 
+#output_path <- "friendship paper/"
 
 site_code <- c("BS", "SC", "TB", "SU") #codes for the sites
 
 #load data
-BS_friendship <- read.table("./data/BS_friends.csv", sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
-SC_friendship <- read.table("./data/SC_friends.csv", sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
-TB_friendship <- read.table("./data/TB_friends.csv", sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
-SU_friendship <- read.table("./data/SU_friends.csv", sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
+BS_friendship <- read.table(paste0(database_path, "data/BS_friends.csv"), sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
+SC_friendship <- read.table(paste0(database_path, "data/SC_friends.csv"), sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
+TB_friendship <- read.table(paste0(database_path, "data/TB_friends.csv"), sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
+SU_friendship <- read.table(paste0(database_path, "data/SU_friends.csv"), sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
 
 #create a set of vectors to use in the loop
 vec_names <- c("n_people", "n_ties", "density", "recip", "trans", "in_degree", "rim") #names of statistical attributes
@@ -49,12 +56,8 @@ for(i in 1:length(network)){
 output <- data.frame(site_code, n_people, n_ties, density, recip, trans, in_degree, rim) %>% 
   rename(size = n_people, ties = n_ties, range = rim)
 
-
-
-
-
-
-
+#export dataframe
+write.csv(output, paste0(output_path, "data/descriptive_stats.csv"))
 
 
 
