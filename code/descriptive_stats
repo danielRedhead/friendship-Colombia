@@ -16,7 +16,6 @@ SC_friendship <- read.table("./data/SC_friends.csv", sep = ",", row.names = 1, h
 TB_friendship <- read.table("./data/TB_friends.csv", sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
 SU_friendship <- read.table("./data/SU_friends.csv", sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
 
-#############################################################################
 #create a set of vectors to use in the loop
 vec_names <- c("n_people", "n_ties", "density", "recip", "trans", "in_degree", "rim") #names of statistical attributes
 vec_list <- vector(mode = "list", length = length(vec_names)) #empty list of length = 7
