@@ -60,7 +60,7 @@ output <- data.frame(site_code, n_people, n_ties, density, recip, trans, in_degr
   mutate_if(is.numeric, ~round(., digits = 3)) #round digits
 
 #export dataframe
-write.csv(output, paste0(output_path, "data/descriptive_stats.csv"))
+write.csv(output, paste0(output_path, "data/descriptive_stats.csv"), row.names = FALSE)
 
 
 
