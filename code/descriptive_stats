@@ -54,7 +54,8 @@ for(i in 1:length(network)){
 
 #output in form of dataframe
 output <- data.frame(site_code, n_people, n_ties, density, recip, trans, in_degree, rim) %>% 
-  rename(size = n_people, ties = n_ties, range = rim)
+  rename(size = n_people, ties = n_ties, range = rim) %>% 
+  mutate_if(is.numeric, ~round(., digits = 4)) #round digits
 
 #export dataframe
 write.csv(output, paste0(output_path, "data/descriptive_stats.csv"))
