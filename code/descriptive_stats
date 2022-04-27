@@ -53,8 +53,10 @@ for(i in 1:length(network)){
 }
 
 #output in form of dataframe
+site_code_endow <- c("PC", "WL", "WL", "IH") #ENDOW site codes to replace the working codes
 output <- data.frame(site_code, n_people, n_ties, density, recip, trans, in_degree, rim) %>% 
   rename(size = n_people, ties = n_ties, range = rim) %>% 
+  mutate(site_code = site_code_endow) %>% 
   mutate_if(is.numeric, ~round(., digits = 3)) #round digits
 
 #export dataframe
