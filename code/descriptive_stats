@@ -4,7 +4,7 @@ library(reshape2)
 
 # Set working directory
 #setwd("C:\\Users\\Mind Is Moving\\Desktop\\friendship-Colombia-main") # Cody's working directory
-#setwd("~/Desktop/") # Augusto's directory
+setwd("~/Desktop/") # Augusto's directory
 # setwd("/Users/") # Dan's directory
 
 # Dan's path
@@ -12,8 +12,8 @@ library(reshape2)
 #output_path <- "danielredhead/friendship-Colombia/"
 
 # Augusto's path
-#database_path <- "friendship paper/" 
-#output_path <- "friendship paper/"
+database_path <- "friendship paper/" 
+output_path <- "friendship paper/"
 
 site_code <- c("BS", "SC", "TB", "SU") #codes for the sites
 
@@ -24,15 +24,21 @@ TB_friendship <- read.table(paste0(database_path, "data/TB_friends.csv"), sep = 
 SU_friendship <- read.table(paste0(database_path, "data/SU_friends.csv"), sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
 
 #create a set of vectors to use in the loop
-vec_names <- c("n_people", "n_ties", "density", "recip", "trans", "in_degree", "rim") #names of statistical attributes
-vec_list <- vector(mode = "list", length = length(vec_names)) #empty list of length = 7
+vec_names <- c("n_people", "n_ties", "density", "recip", "trans", "in_degree", "out_degree", "rim", "rom") #names of statistical attributes
+vec_list <- vector(mode = "list", length = length(vec_names)) #empty list of length = 9
 names(vec_list) <- vec_names #assign names
 for(i in 1:length(vec_names)){
   vec_list[[i]] <- rep(NA, length(site_code)) #each list element gets assigned an empty vector of length 4 (number of sites)
 }
 list2env(vec_list, envir = .GlobalEnv) #export vectors from the list to the global environment
+
+#in-degree and out-degree ranges
+#range objects need to be created separately in form of dataframe (it contains two values)
 in_range <- data.frame(rep(NA, length(site_code)), rep(NA, length(site_code))) %>% 
-  rename(range1 = 1, range2 = 2) #in_range object needs to be created separately in form of dataframe (it contains two values)
+  rename(range1 = 1, range2 = 2)
+out_range <- data.frame(rep(NA, length(site_code)), rep(NA, length(site_code))) %>% 
+  rename(range1 = 1, range2 = 2)
+
 network <- list(BS_friendship, SC_friendship, TB_friendship, SU_friendship) #list of networks
 nets <- list() #empty list to fill with igraph objects from the loop
 
@@ -47,22 +53,19 @@ for(i in 1:length(network)){
   recip[[i]] <- reciprocity(nets[[i]])     #network reciprocity
   trans[[i]] <- transitivity(nets[[i]])    #network transitivity
   in_degree[[i]] <- rowSums(network[[i]]) %>% mean()   #average in-degree
-  in_range[i,] <- rowSums(network[[i]]) %>% range()         #get range
-  rim[[i]] <- paste(in_range[i, 1], in_range[i, 2], sep = " - ")   #merge the range bounds in a character variable
-  
+  in_range[i,] <- rowSums(network[[i]]) %>% range()    #get in-degree range
+  out_range[i,] <- colSums(network[[i]]) %>% range()   #get out-degree range
+  rim[[i]] <- paste(in_range[i, 1], in_range[i, 2], sep = " - ")   #merge the in-degree range bounds in a character variable
+  rom[[i]] <- paste(out_range[i, 1], out_range[i, 2], sep = " - ")   #merge the out-degree range bounds in a character variable
 }
 
 #output in form of dataframe
-site_code_endow <- c("PC", "WL", "WL", "IH") #ENDOW site codes to replace the working codes
-output <- data.frame(site_code, n_people, n_ties, density, recip, trans, in_degree, rim) %>% 
-  rename(size = n_people, ties = n_ties, range = rim) %>% 
+site_code_endow <- c("PC", "WL", "WH", "IH") #ENDOW site codes to replace the working codes
+output <- data.frame(site_code, n_people, n_ties, density, recip, trans, in_degree, rim, rom) %>% 
+  rename(size = n_people, ties = n_ties, in_range = rim, out_range = rom) %>% 
   mutate(site_code = site_code_endow) %>% 
   mutate_if(is.numeric, ~round(., digits = 3)) #round digits
 
 #export dataframe
 write.csv(output, paste0(output_path, "data/descriptive_stats.csv"), row.names = FALSE)
-
-
-
-
 
