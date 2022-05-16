@@ -17,7 +17,11 @@ output_path <- "friendship paper/"
 
 site_code <- c("BS", "SC", "TB", "SU") #codes for the sites
 
-#load data
+########################################################
+##################### FRIENDSHIP #######################
+########################################################
+
+#load data on friendship networks
 BS_friendship <- read.table(paste0(database_path, "data/BS_friends.csv"), sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
 SC_friendship <- read.table(paste0(database_path, "data/SC_friends.csv"), sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
 TB_friendship <- read.table(paste0(database_path, "data/TB_friends.csv"), sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
@@ -67,5 +71,62 @@ output <- data.frame(site_code, n_people, n_ties, density, recip, trans, in_degr
   mutate_if(is.numeric, ~round(., digits = 3)) #round digits
 
 #export dataframe
-write.csv(output, paste0(output_path, "data/descriptive_stats.csv"), row.names = FALSE)
+write.csv(output, paste0(output_path, "data/descriptive_friendship.csv"), row.names = FALSE)
+
+########################################################
+##################### SHARING ##########################
+########################################################
+
+#load data on sharing networks
+BS_sharing <- read.table(paste0(database_path, "data/BS_exchange.csv"), sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
+SC_sharing <- read.table(paste0(database_path, "data/SC_exchange.csv"), sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
+TB_sharing <- read.table(paste0(database_path, "data/TB_exchange.csv"), sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
+SU_sharing <- read.table(paste0(database_path, "data/SU_exchange.csv"), sep = ",", row.names = 1, header = TRUE) %>% as.matrix()
+
+#create a set of vectors to use in the loop
+vec_names <- c("n_people", "n_ties", "density", "recip", "trans", "in_degree", "out_degree", "rim", "rom") #names of statistical attributes
+vec_list <- vector(mode = "list", length = length(vec_names)) #empty list of length = 9
+names(vec_list) <- vec_names #assign names
+for(i in 1:length(vec_names)){
+  vec_list[[i]] <- rep(NA, length(site_code)) #each list element gets assigned an empty vector of length 4 (number of sites)
+}
+list2env(vec_list, envir = .GlobalEnv) #export vectors from the list to the global environment
+
+
+#in-degree and out-degree ranges
+#range objects need to be created separately in form of dataframe (it contains two values)
+in_range <- data.frame(rep(NA, length(site_code)), rep(NA, length(site_code))) %>% 
+  rename(range1 = 1, range2 = 2)
+out_range <- data.frame(rep(NA, length(site_code)), rep(NA, length(site_code))) %>% 
+  rename(range1 = 1, range2 = 2)
+
+network <- list(BS_sharing, SC_sharing, TB_sharing, SU_sharing) #list of networks
+nets <- list() #empty list to fill with igraph objects from the loop
+
+#loop and get the statistical attributes
+for(i in 1:length(network)){
+  
+  #extract a set of descriptive statistics from the networks
+  nets[[i]] <- graph_from_adjacency_matrix(network[[i]]) #create igraph objects and store them in the nets list
+  n_people[[i]] <- nrow(network[[i]])      #get number of individuals in each network
+  n_ties[[i]] <- sum(network[[i]])         #get number of ties in each network
+  density[[i]] <- edge_density(nets[[i]])  #network density
+  recip[[i]] <- reciprocity(nets[[i]])     #network reciprocity
+  trans[[i]] <- transitivity(nets[[i]])    #network transitivity
+  in_degree[[i]] <- rowSums(network[[i]]) %>% mean()   #average in-degree
+  in_range[i,] <- rowSums(network[[i]]) %>% range()    #get in-degree range
+  out_range[i,] <- colSums(network[[i]]) %>% range()   #get out-degree range
+  rim[[i]] <- paste(in_range[i, 1], in_range[i, 2], sep = " - ")   #merge the in-degree range bounds in a character variable
+  rom[[i]] <- paste(out_range[i, 1], out_range[i, 2], sep = " - ")   #merge the out-degree range bounds in a character variable
+}
+
+#output in form of dataframe
+site_code_endow <- c("PC", "WL", "WH", "IH") #ENDOW site codes to replace the working codes
+output <- data.frame(site_code, n_people, n_ties, density, recip, trans, in_degree, rim, rom) %>% 
+  rename(size = n_people, ties = n_ties, in_range = rim, out_range = rom) %>% 
+  mutate(site_code = site_code_endow) %>% 
+  mutate_if(is.numeric, ~round(., digits = 3)) #round digits
+
+#export dataframe
+write.csv(output, paste0(output_path, "data/descriptive_sharing.csv"), row.names = FALSE)
 
