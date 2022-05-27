@@ -1,7 +1,6 @@
 ########################################.
 #
 #   EHB Friendship Analyses  
-#   Daniel Redhead
 #
 ########################################.
 
@@ -43,6 +42,11 @@ pv_distance <- as.matrix(read.table("./data/BS_pv_distance.csv", sep = ",", row.
 dl_distance <- as.matrix(read.table("./data/BS_dl_distance.csv", sep = ",", row.names = 1, header = TRUE))
 al_distance <- as.matrix(read.table("./data/BS_al_distance.csv", sep = ",", row.names = 1, header = TRUE))
 qm_distance <- as.matrix(read.table("./data/BS_qm_distance.csv", sep = ",", row.names = 1, header = TRUE))
+
+giveA <- as.matrix(read.table("./data/BS_give.csv", sep = ",", row.names = 1, header = TRUE))
+leaveA <- as.matrix(read.table("./data/BS_leave.csv", sep = ",", row.names = 1, header = TRUE))
+punishA <- as.matrix(read.table("./data/BS_punish.csv", sep = ",", row.names = 1, header = TRUE))
+
 att <- read.csv("./data/BS_individuals.csv", sep = ",")
 
 att <- att[att$PID %in% rownames(friends),]
@@ -62,6 +66,10 @@ nets <- list( Friends = friends[1:N,1:N])
 
 sharing2 <- ifelse( (sharing + t(sharing)) > 0, 1, 0) #line to be added to all scripts
 
+giveA2 <- ifelse( (giveA + t(giveA)) > 0, 1, 0) #line to be added to all scripts
+leaveA2 <- ifelse( (leaveA + t(leaveA)) > 0, 1, 0) #line to be added to all scripts
+punishA2 <- ifelse( (punishA + t(punishA)) > 0, 1, 0) #line to be added to all scripts
+
 dyad <- list( Relatedness = relatedness[1:N,1:N], 
               Sharing = sharing2[1:N,1:N], 
               Polit_dist = pol_distance[1:N,1:N], 
@@ -74,7 +82,9 @@ dyad <- list( Relatedness = relatedness[1:N,1:N],
               DL = dl_distance[1:N,1:N],
               AL = al_distance[1:N,1:N],
               QM = qm_distance[1:N,1:N],
-              Atrakt_dist = atrakt_distance[1:N, 1:N]
+              Atrakt_dist = atrakt_distance[1:N, 1:N],
+              Give_Dyadic = giveA2[1:N, 1:N],
+              Leave_Dyadic = leaveA2[1:N, 1:N]
               )
 
 group_ids <- data.frame(Ethnicity = as.factor(att$Ethnicity[1:N]), 
@@ -84,10 +94,9 @@ group_ids <- data.frame(Ethnicity = as.factor(att$Ethnicity[1:N]),
 indiv <-  data.frame(Age = center(att$Age[1:N]), 
                      Grip = center(att$Grip[1:N]),
                      BMI = center(att$BMI[1:N]),  
-				             Wealth = center(log(att$hh_wealth[1:N]+20)),
+				     Wealth = center(log(att$hh_wealth[1:N]+20)),
                      Give = center(att$GiveOther[1:N]),
                      Leave = center(att$LeaveOther[1:N]),
-                     Punish = center(att$ReduceOther[1:N]),
                      Edu = center(att$EducationYears[1:N]),
                      RS = att$ChildrenAlive[1:N],
                      Attractiveness = att$A_S[1:N])
@@ -101,18 +110,18 @@ model_dat <- make_strand_data(self_report = nets,
 fit_BS <- fit_block_plus_social_relations_model( data=model_dat,
       block_regression = ~ Sex + Religion + Ethnicity,
       focal_regression = ~ 1,
-      target_regression = ~ Give + Leave + Punish + Attractiveness + RS +  Grip + Wealth + Age + Edu + BMI,
-      dyad_regression = ~ Sharing + Relatedness  + Phys_dist  + Polit_dist +  Wealth_dist + Age_dist + Edu_dist + BMI_dist + Atrakt_dist,
+      target_regression = ~ Give + Leave + Attractiveness + RS +  Grip + Wealth + Age + Edu + BMI,
+      dyad_regression = ~ Sharing + Relatedness  + Phys_dist  + Polit_dist +  Wealth_dist + Age_dist + Edu_dist + BMI_dist + Atrakt_dist + Give_Dyadic + Leave_Dyadic,
        mode="mcmc",
-       stan_mcmc_parameters = list(chains = 1, parallel_chains = 1, refresh = 1,
-    iter_warmup = 1000, iter_sampling = 1000,
-     max_treedepth = NULL, adapt_delta = .98)
+       stan_mcmc_parameters = list(chains = 2, parallel_chains = 1, refresh = 1,
+                                   iter_warmup = 1500, iter_sampling = 1500,
+                                    max_treedepth = NULL, adapt_delta = .98)
        )
 
 res_BS <- summarize_strand_results(fit_BS)
 
 #plotting results
-strand_caterpillar_plot = function(results, submodels=NULL, normalized=FALSE, only_slopes=TRUE, only_technicals=FALSE, site="BOB"){
+strand_caterpillar_plot = function(results, submodels=NULL, normalized=FALSE, only_slopes=FALSE, only_technicals=FALSE, site="BOB"){
   dat = vector("list",length(results$summary_list))
 
   for(k in 1:length(results$summary_list)){
@@ -229,4 +238,85 @@ if(only_technicals==TRUE){
 
   df_BSs = strand_caterpillar_plot(res_BS, submodel=c("Focal efffects: Out-degree","Target effects: In-degree","Dyadic effects","Other estimates"), normalized=TRUE, site="BS")
  save(df_BSs, file="df_BSs.RData")
+
+
+
+#################################################################### Contrasts
+####################### Sex
+intercepts = res_BS$samples$srm_model_samples$block_parameters
+
+sex_int2 = sex_int = intercepts[[2]]
+
+nsamps = dim(sex_int)[1]
+
+for(i in 1:nsamps){
+  sex_int2[i,,] = sex_int[i,,] - sex_int[i,1,1]
+}
+
+sex_M = apply(sex_int2, 2:3, mean)
+sex_L = apply(sex_int2, 2:3, HPDI)[1,,]
+sex_H = apply(sex_int2, 2:3, HPDI)[2,,]
+sex_Labs = matrix(c("offset, FEMALE to FEMALE", "offset, FEMALE to MALE", "offset, MALE to FEMALE", "offset, MALE to MALE"), nrow=2, ncol=2, byrow = TRUE)
+
+sex_df_diff_bs = data.frame(Variable = c(sex_Labs),
+                         Mean = c(sex_M),     
+                         LI = c(sex_L),    
+                         HI = c(sex_H),
+                         Site = "BS"   
+                         )
+
+save(sex_df_diff_bs, file="df_BS_sex.RData")
+
+####################### Religion
+rel_int2 = rel_int = intercepts[[3]]
+
+nsamps = dim(rel_int)[1]
+
+for(i in 1:nsamps){
+  rel_int2[i,,] = rel_int[i,,] - rel_int[i,1,1]
+}
+
+rel_M = apply(rel_int2, 2:3, mean)
+rel_L = apply(rel_int2, 2:3, HPDI)[1,,]
+rel_H = apply(rel_int2, 2:3, HPDI)[2,,]
+rel_Labs = matrix(c("offset, CATHOLIC to CATHOLIC", "offset, CATHOLIC to NONE", "offset, CATHOLIC to OTHER",
+                    "offset, NONE to CATHOLIC", "offset, NONE to NONE", "offset, NONE to OTHER",
+                    "offset, OTHER to CATHOLIC", "offset, OTHER to NONE", "offset, OTHER to OTHER"), nrow=3, ncol=3, byrow = TRUE)
+
+rel_df_diff_bs = data.frame(Variable = c(rel_Labs),
+                         Mean = c(rel_M),     
+                         LI = c(rel_L),    
+                         HI = c(rel_H),
+                         Site = "BS"   
+                         )
+
+save(rel_df_diff_bs, file="df_BS_rel.RData")
+
+
+####################### Ethnicity
+eth_int2 = eth_int = intercepts[[4]]
+
+nsamps = dim(eth_int)[1]
+
+for(i in 1:nsamps){
+  eth_int2[i,,] = eth_int[i,,] - eth_int[i,1,1]
+}
+
+eth_M = apply(eth_int2, 2:3, mean)
+eth_L = apply(eth_int2, 2:3, HPDI)[1,,]
+eth_H = apply(eth_int2, 2:3, HPDI)[2,,]
+eth_Labs = matrix(c("offset, AFROCOLOMBIAN to AFROCOLOMBIAN", "offset, AFROCOLOMBIAN to EMBERA", "offset, AFROCOLOMBIAN to MESTIZO",
+                    "offset, EMBERA to AFROCOLOMBIAN", "offset, EMBERA to EMBERA", "offset, EMBERA to MESTIZO",
+                    "offset, MESTIZO to AFROCOLOMBIAN", "offset, MESTIZO to EMBERA", "offset, MESTIZO to MESTIZO"), nrow=3, ncol=3, byrow = TRUE)
+
+eth_df_diff_bs = data.frame(Variable = c(eth_Labs),
+                         Mean = c(eth_M),     
+                         LI = c(eth_L),    
+                         HI = c(eth_H),
+                         Site = "BS"   
+                         )
+
+save(eth_df_diff_bs, file="df_BS_eth.RData")
+
+
 
