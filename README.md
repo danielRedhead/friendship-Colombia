@@ -5,7 +5,7 @@ Data, code and manuscript for "Cooperation and partner choice in rural Colombia"
 
 # The manuscript can be found at:
 
-- Evolutiona and Human Behavior: https://www.sciencedirect.com/science/article/abs/pii/S1090513822000484
+- Evolution and Human Behavior: https://www.sciencedirect.com/science/article/abs/pii/S1090513822000484
 - psyArxiv (preprint): https://psyarxiv.com/ekwu8/
 
 # Requirements for analyses:
