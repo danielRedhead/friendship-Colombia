@@ -1,4 +1,4 @@
-# Pemba-wealth
+# friendship-Colombia
 
 Data, code and manuscript for "Cooperation and partner choice in rural Colombia", published in Evolution and Human Behavior
 ----------------------------
